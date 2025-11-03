@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">👨‍🏫 Masterclasses</h2>
+
+{% if masterclasses and masterclasses|length > 0 %}
+  <div class="card">
+    <div class="card-header">
+      <h3 class="h6 m-0">Liste des masterclasses</h3>
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for mc in masterclasses %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('main.masterclass_detail', masterclass=mc) }}" class="text-decoration-none">{{ mc }}</a>
+          <a href="{{ url_for('main.masterclass_detail', masterclass=mc) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% else %}
+  <div class="alert alert-info">Aucune masterclass trouvée.</div>
+{% endif %}
+
+<p class="mt-4">
+  <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
+</p>
+
+{% endblock %}

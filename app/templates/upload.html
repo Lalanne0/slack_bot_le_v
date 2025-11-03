@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">En attendant l'API officielle de Nexus...</h2>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="file_fr" class="form-label">Fichier en français</label>
+        <input class="form-control" type="file" id="file_fr" name="file_fr" accept=".csv">
+      </div>
+
+      <div class="mb-3">
+        <label for="file_en" class="form-label">Fichier en anglais</label>
+        <input class="form-control" type="file" id="file_en" name="file_en" accept=".csv">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Uploader</button>
+        <button type="reset" class="btn btn-outline-secondary">Réinitialiser</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

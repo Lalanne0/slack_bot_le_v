@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">👨‍🏫 Détail de la masterclass : {{ masterclass }}</h2>
+
+<div class="row g-4">
+  <section class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h3 class="h6 m-0">⬇️ Statistiques générales ⬇️</h3>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0">
+          <li><strong>🎯 Sessions totales :</strong> {{ sessions_total }}</li>
+          <li><strong>📊 Moyenne générale :</strong> {{ moyenne_generale }}</li>
+          <li><strong>🏆 Classement :</strong> {{ classement }}</li>
+          <li><strong>⭐ Meilleur animateur :</strong>
+            {% if best_label %} {{ best_label }} {% else %} Aucun animateur disponible. {% endif %}
+          </li>
+          <li><strong>❌ Pire animateur :</strong>
+            {% if worst_label %} {{ worst_label }} {% else %} Aucun animateur disponible. {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h3 class="h6 m-0">⬇️ Derniers 30 jours ⬇️</h3>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled">
+          <li><strong>📅 Sessions :</strong> {{ sessions_30j }}</li>
+          <li><strong>📈 Moyenne :</strong>
+            {% if moyenne_30j is not none %} {{ moyenne_30j }} {% else %} Aucune donnée {% endif %}
+          </li>
+          <li><strong>🏆 Classement :</strong> {{ classement_30j }}</li>
+        </ul>
+
+        <h4 class="h6 mt-3">📆 Détail des sessions</h4>
+        {% if sessions_30j_table.rows %}
+          <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover">
+              <thead class="table-light">
+                <tr>
+                  {% for c in sessions_30j_table.columns %}
+                    <th>{{ c }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in sessions_30j_table.rows %}
+                  <tr>
+                    {% for c in sessions_30j_table.columns %}
+                      <td>{{ r[c] }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">Aucune session sur les 30 derniers jours.</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+
+<hr class="my-4">
+
+<h3 class="mb-3">📚 Animateurs de cette MC</h3>
+{% if mc_table.rows %}
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              {% for c in mc_table.columns %}
+                <th>{{ c }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in mc_table.rows %}
+              <tr>
+                {% for c in mc_table.columns %}
+                  <td>{{ r[c] }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-warning">Aucun animateur pour cette MC.</div>
+{% endif %}
+
+<p class="mt-4">
+  <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
+</p>
+{% endblock %}

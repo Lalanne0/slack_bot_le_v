@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🤖 Slack Bot</h2>
+
+<br></br>
+
+<div class="row">
+    <div class="col-md-4">
+        <div>
+            Récap des meilleurs animateurs des 30 derniers jours
+            <form method="post">
+                <input type="hidden" name="action" value="wof">
+                <button type="submit" class="btn btn-outline-primary">
+                    <img src="{{ url_for('static', filename='images/slack-logo.png') }}" alt=""
+                        style="height:14px;width:14px;vertical-align:middle;margin-right:6px;">
+                    Envoyer
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div>
+            Récap des animateurs sous 4.0 des 30 derniers jours
+            <form method="post">
+                <input type="hidden" name="action" value="wos">
+                <button type="submit" class="btn btn-outline-primary">
+                    <img src="{{ url_for('static', filename='images/slack-logo.png') }}" alt=""
+                        style="height:14px;width:14px;vertical-align:middle;margin-right:6px;">
+                    Envoyer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div>
+            Récap des commentaires négatifs de la semaine
+            <form method="post">
+                <input type="hidden" name="action" value="bad">
+                <button type="submit" class="btn btn-outline-primary">
+                    <img src="{{ url_for('static', filename='images/slack-logo.png') }}" alt=""
+                        style="height:14px;width:14px;vertical-align:middle;margin-right:6px;">
+                    Envoyer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<br></br>
+
+<p class="mt-4">
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
+</p>
+
+
+{% endblock %}

@@ -1,0 +1,133 @@
+<!-- app/templates/techaway.html — un seul bloc niveau TECHFORALL (N0) + TP -->
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">TechAway</h2>
+
+<!-- Tuile programme TECHFORALL -->
+<div class="hero-techaway d-flex flex-column align-items-center justify-content-center mb-2 js-program"
+     data-program="{{ hero_name }}" style="{{ hero_style }}" role="button" tabindex="0">
+  <div class="display-6 fw-bold text-white text-shadow">{{ hero_name }}</div>
+  <div class="text-white-50 text-shadow">{{ hero_score_label }}</div>
+</div>
+
+<!-- Un seul bloc de niveau (N0) pour TECHFORALL -->
+<div id="levels-{{ hero_name }}" class="level-grid d-none mb-2">
+  {% set lvl = hero_levels[0] %}
+  <div class="level-tile js-level" style="{{ lvl.style }}"
+       data-program="{{ hero_name }}" data-level="{{ lvl.code }}" role="button" tabindex="0">
+    <div class="fw-semibold">{{ lvl.name }}</div>
+    <div class="small">{{ lvl.score_label }}</div>
+  </div>
+</div>
+
+<!-- TPs du hero (N0) -->
+<div id="tp-{{ hero_name }}-N0" class="tp-grid d-none mb-4" data-group="tp-panels">
+  {% for tp in [1,2,3,4] %}
+    {% set key = hero_name ~ '_N0_TP' ~ tp %}
+    {% set meta = tp_meta.get(key) %}
+    {% set ms = hero_name ~ '-N0 - TP ' ~ tp %}
+    <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
+      <div>TP {{ tp }}</div>
+      <div class="tp-score">{{ meta.label if meta else '—' }}</div>
+      <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
+    </a>
+  {% endfor %}
+</div>
+
+<!-- Autres verticales regroupées (programme -> niveaux -> TPs) -->
+<div class="vertical-grid">
+  {% for t in tiles %}
+    <div class="vertical-card">
+      <div class="vertical-tile js-program" data-program="{{ t.name }}" style="{{ t.style }}" role="button" tabindex="0">
+        <div class="vertical-name">{{ t.name }}</div>
+        <div class="vertical-score">{{ t.score_label }}</div>
+      </div>
+
+      <div id="levels-{{ t.name }}" class="level-grid d-none mb-2">
+        {% for lvl in t.levels %}
+          <div class="level-tile js-level" style="{{ lvl.style }}"
+               data-program="{{ t.name }}" data-level="{{ lvl.code }}" role="button" tabindex="0">
+            <div class="fw-semibold">{{ lvl.name }}</div>
+            <div class="small">{{ lvl.score_label }}</div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% for lvl in t.levels %}
+        <div id="tp-{{ t.name }}-{{ lvl.code }}" class="tp-grid d-none mb-4" data-group="tp-panels">
+          {% for tp in [1,2,3,4] %}
+            {% set key = t.name ~ '_' ~ lvl.code ~ '_TP' ~ tp %}
+            {% set meta = tp_meta.get(key) %}
+            {% set ms = t.name ~ '-' ~ lvl.code ~ ' - TP ' ~ tp %}
+            <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
+              <div>TP {{ tp }}</div>
+              <div class="tp-score">{{ meta.label if meta else '—' }}</div>
+              <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+
+<p class="mt-4">
+  <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
+</p>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Toggle niveaux par programme (y compris TECHFORALL)
+  document.querySelectorAll('.js-program').forEach(function(el) {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function() {
+      const name = el.dataset.program;
+      const panel = document.getElementById('levels-' + name);
+      if (panel) {
+        panel.classList.toggle('d-none');
+        if (!panel.classList.contains('d-none')) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    });
+    el.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    });
+  });
+
+  // Un seul panneau TP ouvert à la fois
+  let currentOpenTP = null;
+
+  // Toggle TP par niveau (N0 pour TECHFORALL, N1..N3 pour les autres)
+  document.querySelectorAll('.js-level').forEach(function(levelEl) {
+    levelEl.style.cursor = 'pointer';
+    const toggleTP = () => {
+      const prog = levelEl.dataset.program;
+      const level = levelEl.dataset.level; // "N0" (Techforall) ou "N1/N2/N3"
+      const targetId = 'tp-' + prog + '-' + level;
+      const targetPanel = document.getElementById(targetId);
+      if (!targetPanel) return;
+
+      if (currentOpenTP && currentOpenTP !== targetPanel) {
+        currentOpenTP.classList.add('d-none');
+      }
+      const willOpen = targetPanel.classList.contains('d-none');
+      targetPanel.classList.toggle('d-none');
+      currentOpenTP = willOpen ? targetPanel : null;
+
+      if (willOpen) {
+        targetPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    };
+    levelEl.addEventListener('click', toggleTP);
+    levelEl.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTP(); }
+    });
+  });
+});
+</script>
+{% endblock %}

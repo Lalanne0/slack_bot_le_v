@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">🏅 Leaderboard</h2>
+
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-4">
+    <label for="left" class="form-label">Colonne gauche</label>
+    <select id="left" name="left" class="form-select">
+      {% for k, opt in all_options.items() %}
+      <option value="{{ k }}" {% if k==left_key %}selected{% endif %}>{{ opt.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label for="right" class="form-label">Colonne droite</label>
+    <select id="right" name="right" class="form-select">
+      {% for k, opt in all_options.items() %}
+      <option value="{{ k }}" {% if k==right_key %}selected{% endif %}>{{ opt.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label for="min_sessions" class="form-label">Sessions minimales</label>
+    <div class="d-flex align-items-center gap-2">
+      <input type="range" class="form-range" id="min_sessions" name="min_sessions" min="1" max="100" step="1"
+        value="{{ min_sessions }}">
+      <span class="badge text-bg-secondary">{{ min_sessions }}</span>
+    </div>
+    <div class="form-text">Nombre minimal de sessions pour être affiché sur le leaderboard.</div>
+  </div>
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Afficher</button>
+    <a href="{{ url_for('main.leaderboard') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+  </div>
+</form>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h6 m-0">{{ left_label }}</h3>
+        {% if left.type == 'animateur' or left.type == 'masterclass' %}
+        <span class="badge bg-secondary">≥ {{ min_sessions }} sessions</span>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if left.rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                {% for c in left.columns %}
+                <th scope="col">{{ c }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in left.rows %}
+              <tr>
+                {% for c in left.columns %}
+                {% if c == left.label_col and left.type == 'animateur' %}
+                <td><a href="{{ url_for('main.animateur_detail', animateur=r[c]) }}" class="text-decoration-none">{{
+                    r[c] }}</a></td>
+                {% elif c == left.label_col and left.type == 'masterclass' %}
+                <td><a href="{{ url_for('main.masterclass_detail', masterclass=r[c]) }}" class="text-decoration-none">{{
+                    r[c] }}</a></td>
+                {% else %}
+                <td>{{ r[c] }}</td>
+                {% endif %}
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="p-3">Aucune donnée.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h6 m-0">{{ right_label }}</h3>
+        {% if right.type == 'animateur' or right.type == 'masterclass' %}
+        <span class="badge bg-secondary">≥ 1 session</span>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if right.rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                {% for c in right.columns %}
+                <th scope="col">{{ c }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in right.rows %}
+              <tr>
+                {% for c in right.columns %}
+                {% if c == right.label_col and right.type == 'animateur' %}
+                <td><a href="{{ url_for('main.animateur_detail', animateur=r[c]) }}" class="text-decoration-none">{{
+                    r[c] }}</a></td>
+                {% elif c == right.label_col and right.type == 'masterclass' %}
+                <td><a href="{{ url_for('main.masterclass_detail', masterclass=r[c]) }}" class="text-decoration-none">{{
+                    r[c] }}</a></td>
+                {% else %}
+                <td>{{ r[c] }}</td>
+                {% endif %}
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="p-3">Aucune donnée.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="mt-4">
+  <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
+</p>
+
+{% endblock %}
