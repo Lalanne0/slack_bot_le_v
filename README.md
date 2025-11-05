@@ -51,7 +51,6 @@ slack_bot_flask/
 │     ├─ animateur.html
 │     ├─ masterclasses.html
 │     ├─ masterclass.html
-│     ├─ login.html
 │     ├─ upload.html
 │     └─ slack_bot.html
 ├─ backend/
@@ -100,15 +99,6 @@ python run.py
 
 # 3) Visiter http://127.0.0.1:5000
 ```
-
----
-
-## 🔐 Authentification
-
-* URL : `/login`
-* Identifiants : **kpi / kpi**
-* Toutes les routes du blueprint `main` sont protégées via `before_request`.
-* Bouton **Login/Logout** dans la navbar (à droite).
 
 ---
 
@@ -174,12 +164,13 @@ Les colonnes **Masterclass** et **Animator Role** sont générées via mapping m
   Liste de masterclasses cliquables.
 * `/masterclass/<masterclass>`
   Détail d’une MC (stats & tables).
-* `/leaderboard?left=&right=&min_sessions=`
-  Page **2 colonnes** configurables :
+* `/leaderboard`
+  Page **3 colonnes** configurables :
 
   * `left`/`right` ∈ `{anim, anim30, mc, mc30}`
   * `min_sessions` (par défaut 20) — appliqué aux leaderboards **animateurs**
     Une session = **Meeting ID unique** (filtrage via `get_animateurs_plus_de_20_dessions(df, min_sessions)`).
+  * Rôle de l'animateur (Expert, PM, etc.)
 * `/slack_bot`
   3 boutons : Top animateurs, Not Top, Commentaires négatifs.
 
@@ -188,4 +179,5 @@ Les colonnes **Masterclass** et **Animator Role** sont générées via mapping m
 ## 🧱 UI / Templates
 
 * **Bootstrap 5** via CDN (déjà dans `base.html`)
+
 * `styles.css` (chargé via `url_for('static', filename='styles.css')`)
