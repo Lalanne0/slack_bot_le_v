@@ -71,38 +71,73 @@ def _masterclass_column(df: pd.DataFrame) -> str:
 @bp.route("/", methods=["GET", "POST"])
 def upload_files():
     if request.method == "POST":
-        file_fr = request.files.get("file_fr")
-        file_en = request.files.get("file_en")
+        # Récupération des 4 fichiers potentiels
+        mc_file_fr = request.files.get("mc_file_fr")
+        mc_file_en = request.files.get("mc_file_en")
+        ta_file_fr = request.files.get("ta_file_fr")
+        ta_file_en = request.files.get("ta_file_en")
 
-        if not file_fr and not file_en:
-            flash("Veuillez uploader au moins un fichier (FR ou EN).")
+        # Au moins un fichier requis
+        if not any([mc_file_fr, mc_file_en, ta_file_fr, ta_file_en]):
+            flash("Veuillez uploader au moins un fichier (FR ou EN) dans l'une des sections.")
             return redirect(request.url)
 
         upload_dir = _upload_dir()
-        df_fr = df_en = None
 
-        if file_fr and allowed_file(file_fr.filename or ""):
-            filename_fr = secure_filename(file_fr.filename or "")
-            if filename_fr:
-                save_path_fr = upload_dir / filename_fr
-                file_fr.save(str(save_path_fr))
-                df_fr = pd.read_csv(save_path_fr)
+        def read_csv_if_ok(file_storage):
+            """Sauvegarde sécurisée + lecture CSV si fourni & extension OK, sinon None."""
+            if not file_storage:
+                return None
+            if not allowed_file(file_storage.filename or ""):
+                return None
+            fname = secure_filename(file_storage.filename or "")
+            if not fname:
+                return None
+            save_path = upload_dir / fname
+            file_storage.save(str(save_path))
+            return pd.read_csv(save_path)
 
-        if file_en and allowed_file(file_en.filename or ""):
-            filename_en = secure_filename(file_en.filename or "")
-            if filename_en:
-                save_path_en = upload_dir / filename_en
-                file_en.save(str(save_path_en))
-                df_en = pd.read_csv(save_path_en)
+        # Lecture des CSV (chacun peut être None)
+        df_mc_fr = read_csv_if_ok(mc_file_fr)
+        df_mc_en = read_csv_if_ok(mc_file_en)
+        df_ta_fr = read_csv_if_ok(ta_file_fr)
+        df_ta_en = read_csv_if_ok(ta_file_en)
 
-        df_processed = preprocess_data(df_fr, df_en)
+        # Rien de valide ?
+        if not any([df_mc_fr is not None, df_mc_en is not None, df_ta_fr is not None, df_ta_en is not None]):
+            flash("Aucun fichier valide (.csv) n'a été détecté.")
+            return redirect(request.url)
+
+        # --- Traitement : même logique pour chaque paire (FR/EN) ---
+        dfs_processed = []
+
+        # Paire Masterclass
+        if (df_mc_fr is not None) or (df_mc_en is not None):
+            df_proc_mc = preprocess_data(df_mc_fr, df_mc_en)
+            if df_proc_mc is not None and not df_proc_mc.empty:
+                dfs_processed.append(df_proc_mc)
+
+        # Paire TechAway
+        if (df_ta_fr is not None) or (df_ta_en is not None):
+            df_proc_ta = preprocess_data(df_ta_fr, df_ta_en)
+            if df_proc_ta is not None and not df_proc_ta.empty:
+                dfs_processed.append(df_proc_ta)
+
+        if not dfs_processed:
+            flash("Les fichiers fournis n'ont produit aucune donnée après traitement.")
+            return redirect(request.url)
+
+        # Concat finale (empilement vertical)
+        df_processed = pd.concat(dfs_processed, ignore_index=True)
+
+        # Sauvegarde unique vers le chemin déjà utilisé par l'app
         df_processed.to_csv(_processed_path(), index=False)
 
         flash("Fichiers uploadés et traités avec succès.")
-            
         return redirect(url_for("main.dashboard"))
 
     return render_template("upload.html")
+
 
 @bp.route("/dashboard")
 def dashboard():

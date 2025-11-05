@@ -23,15 +23,23 @@ def preprocess_data(df_fr, df_en=None):
     else:
         df = df_fr
     
-    df = df[['Cohort ID', 'User ID', 'User Fullname', 'Meeting Animator',
+    df = df[['Survey Answer Date', 'Cohort ID', 'User ID', 'User Fullname', 'Meeting Animator',
             'Meeting Name', 'Meeting ID', 'Meeting Start Date', 'Question ID', 'Answer']]
     
     df = df.copy()
     
+    # if Meeting Start Date has more than 90% NaNs, consider Survey Answer Time instead
+    if df["Meeting Start Date"].isna().mean() > 0.9:
+        df = df.drop(columns=["Meeting Start Date"])
+        df = df.rename(columns={"Survey Answer Date": "Meeting Start Date"})
+    else:
+        df = df.drop(columns=["Survey Answer Date"])
+    
+    
     df["Meeting Animator"] = df["Meeting Animator"].fillna("Missing")
     df["Meeting Name"] = df["Meeting Name"].fillna("Missing")
     df["Meeting Start Date"] = df["Meeting Start Date"].fillna("01/01/1970 00:00")
-    
+        
     qid_map = {
         # Question 1 : Animator Grade
         '4d3a0ab6-2a9f-4dba-bc74-2b2aa48151a7': "Animator Grade",  # FR
@@ -55,7 +63,7 @@ def preprocess_data(df_fr, df_en=None):
         '4fcb5e59-63d8-4dd7-b340-55d939b485e7': "Comment",  # FR TechAway post TP
         '2346e81c-4f44-409d-810c-56ca6c2891c6': "Comment",  # EN TechAway post TP
     }
-    df = df.copy()
+    
     df["Answer_Type"] = df["Question ID"].map(qid_map)
     meta_cols = ["Cohort ID","User ID","User Fullname",
                  "Meeting Animator","Meeting Name","Meeting ID","Meeting Start Date"]
@@ -76,6 +84,8 @@ def preprocess_data(df_fr, df_en=None):
     final.dropna(subset=["Animator Grade"], inplace=True)    
     final["Content Grade"] = final["Content Grade"].fillna(final["Animator Grade"])
     final["Comment"] = final["Comment"].fillna("")
+    
+    # print(final.head())
     
     final["Meeting Start Date"] = pd.to_datetime(final["Meeting Start Date"], format="%d/%m/%Y %H:%M", errors='coerce')
     
