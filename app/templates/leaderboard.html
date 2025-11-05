@@ -12,6 +12,7 @@
       {% endfor %}
     </select>
   </div>
+
   <div class="col-md-4">
     <label for="right" class="form-label">Colonne droite</label>
     <select id="right" name="right" class="form-select">
@@ -20,6 +21,7 @@
       {% endfor %}
     </select>
   </div>
+
   <div class="col-md-4">
     <label for="min_sessions" class="form-label">Sessions minimales</label>
     <div class="d-flex align-items-center gap-2">
@@ -29,11 +31,24 @@
     </div>
     <div class="form-text">Nombre minimal de sessions pour être affiché sur le leaderboard.</div>
   </div>
+
+  <!-- NOUVEAU : filtre multi-rôles -->
+  <div class="col-md-6">
+    <label for="role" class="form-label">Filtrer par rôle (Animator Role)</label>
+    <select id="role" name="role" class="form-select" multiple>
+      {% for r in roles %}
+        <option value="{{ r }}" {% if r in selected_roles %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-text">Maintenez Ctrl (Windows) ou ⌘ (Mac) pour une sélection multiple.</div>
+  </div>
+
   <div class="col-12">
     <button type="submit" class="btn btn-primary">Afficher</button>
     <a href="{{ url_for('main.leaderboard') }}" class="btn btn-outline-secondary">Réinitialiser</a>
   </div>
 </form>
+
 
 <div class="row g-4">
   <div class="col-lg-6">

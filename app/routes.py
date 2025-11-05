@@ -14,7 +14,6 @@ from backend.kpi_masterclass import *
 from backend.kpi_comments import *
 from backend.kpi_techaway import *
 from backend.reporting import *
-from config import APP_USERNAME, APP_PASSWORD
 
 ALLOWED_EXTENSIONS = {"csv"}
 bp = Blueprint("main", __name__)
@@ -104,45 +103,6 @@ def upload_files():
         return redirect(url_for("main.dashboard"))
 
     return render_template("upload.html")
-
-
-def login_required(view):
-    @wraps(view)
-    def wrapped(*args, **kwargs):
-        if not session.get("logged_in"):
-            return redirect(url_for("main.login", next=request.url))
-        return view(*args, **kwargs)
-    return wrapped
-
-
-@bp.before_request
-def _protect_routes():
-    allowed = {"main.login", "main.logout", "static"}
-    if request.endpoint in allowed or (request.endpoint or "").startswith("static"):
-        return
-    if not session.get("logged_in"):
-        return redirect(url_for("main.login", next=request.url))
-
-
-@bp.route("/login", methods=["GET", "POST"])
-def login():
-    error = None
-    if request.method == "POST":
-        username = (request.form.get("username") or "").strip()
-        password = (request.form.get("password") or "").strip()
-        if username == APP_USERNAME and password == APP_PASSWORD:
-            session["logged_in"] = True
-            session["username"] = username
-            return redirect(request.args.get("next") or url_for("main.dashboard"))
-        error = "Identifiants invalides."
-    return render_template("login.html", error=error)
-
-
-@bp.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("main.login"))
-
 
 @bp.route("/dashboard")
 def dashboard():
@@ -397,6 +357,7 @@ def masterclass_detail(masterclass: str):
         return f"Erreur : {e}"
     
     
+# routes.py (extrait)
 @bp.route("/leaderboard")
 def leaderboard():
     try:
@@ -406,11 +367,28 @@ def leaderboard():
 
         df = light_preprocess(pd.read_csv(processed_path))
 
+        # --- NOUVEAU : collecte des rôles disponibles ---
+        if "Animator Role" in df.columns:
+            roles = sorted(df["Animator Role"].dropna().astype(str).unique().tolist())
+        else:
+            roles = []
+
         # Slider / query param: seuil minimum de sessions
         min_sessions = request.args.get("min_sessions", default=20, type=int)
         if not isinstance(min_sessions, int) or min_sessions < 1:
             min_sessions = 20
 
+        # --- NOUVEAU : lecture & application du filtre de rôles (multi) ---
+        # /leaderboard?...&role=cyber&role=expert
+        selected_roles = request.args.getlist("role")
+        # sécurité : on ne garde que les valeurs connues
+        selected_roles = [r for r in selected_roles if r in roles]
+
+        if selected_roles:
+            # filtrer le DF principal, tout le reste (30j, etc.) en hérite
+            df = df[df["Animator Role"].astype(str).isin(selected_roles)].copy()
+
+        # DFs filtrés sur le min_sessions (comme avant)
         df_anim = get_animateurs_plus_de_20_sessions(df, min_sessions)
         df_mc = get_masterclass_plus_de_10_sessions(df, min_sessions)
 
@@ -455,9 +433,13 @@ def leaderboard():
             right_key=right_key,
             all_options=options,
             min_sessions=min_sessions,
+            # --- NOUVEAU : passer les rôles et la sélection à Jinja ---
+            roles=roles,
+            selected_roles=selected_roles,
         )
     except Exception as e:
         return f"Erreur : {e}"
+
 
 
 

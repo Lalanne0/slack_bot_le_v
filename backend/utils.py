@@ -5,7 +5,6 @@ import pandas as pd
 import json
 from pathlib import Path
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
 
 
 MAPPING_DIR = Path(__file__).parent / "mapping"
