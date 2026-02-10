@@ -76,7 +76,6 @@
 
   "Fondamentaux Machine Learning": "Fondamentaux Machine Learning",
   "Introduction au Machine Learning": "Fondamentaux Machine Learning",
-  "Intro ML": "Fondamentaux Machine Learning",
   "Intro Machine Learning": "Fondamentaux Machine Learning",
   "Approf. ML": "Fondamentaux Machine Learning",
   "Approf ML": "Fondamentaux Machine Learning",
@@ -195,6 +194,7 @@
 
   "Overview MLOps": "Overview MLOps",
   "Overview MLOPS et ses outils": "Overview MLOps",
+
   "Intro MLOps": "Intro MLOps",
   "Introduction au MLOPS": "Intro MLOps",
   "Introduction au ML Ops": "Intro MLOps",
@@ -257,6 +257,7 @@
   "Monitoring best practices": "Monitoring best practices",
   "Data Profiling": "Correction DA101 + Data Profiling",
   "IA & Growth Hacking": "IA & Growth Hacking",
+  "AI & Growth Hacking": "IA & Growth Hacking",
   "intro LXC": "Introduction à LXC",
 
   "DNC et LXC": "Approfondissement sécurité du cloud",
