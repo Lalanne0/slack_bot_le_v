@@ -10,7 +10,6 @@ __pycache__/
 merged_processed.csv
 post_meeting_masterclass.csv
 post_meeting_masterclass_1.csv
-DEPLOYMENT.md
 
 # Distribution / packaging
 .Python
