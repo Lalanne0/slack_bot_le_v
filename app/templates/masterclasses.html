@@ -3,22 +3,52 @@
 
 <h2 class="mb-4">👨‍🏫 Masterclasses</h2>
 
-{% if masterclasses and masterclasses|length > 0 %}
-  <div class="card">
-    <div class="card-header">
-      <h3 class="h6 m-0">Liste des masterclasses</h3>
-    </div>
-    <ul class="list-group list-group-flush">
-      {% for mc in masterclasses %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <a href="{{ url_for('main.masterclass_detail', masterclass=mc) }}" class="text-decoration-none">{{ mc }}</a>
-          <a href="{{ url_for('main.masterclass_detail', masterclass=mc) }}" class="btn btn-sm btn-outline-primary">Voir</a>
-        </li>
-      {% endfor %}
-    </ul>
+{% if mapped_masterclasses or other_masterclasses %}
+
+{% if mapped_masterclasses %}
+<div class="card mb-4">
+  <div class="card-header bg-success text-white">
+    <h3 class="h6 m-0">Masterclasses Officielles (triées par satisfaction)</h3>
   </div>
+  <ul class="list-group list-group-flush">
+    {% for item in mapped_masterclasses %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <a href="{{ url_for('main.masterclass_detail', masterclass=item.name) }}"
+          class="text-decoration-none fw-bold">{{ item.name }}</a>
+      </div>
+      <span class="badge bg-primary rounded-pill">{{ item.avg }}/5</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if other_masterclasses %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="h6 m-0">📂 Autres (Non mappées / Anciennes)</h3>
+  </div>
+  <div class="card-body">
+    <details>
+      <summary class="cursor-pointer text-primary">Voir les {{ other_masterclasses|length }} autres masterclasses
+      </summary>
+      <ul class="list-group list-group-flush mt-3">
+        {% for item in other_masterclasses %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('main.masterclass_detail', masterclass=item.name) }}"
+            class="text-decoration-none text-muted">{{ item.name }}</a>
+          <span class="badge bg-secondary rounded-pill">{{ item.avg }}/5</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
+  </div>
+</div>
+{% endif %}
+
 {% else %}
-  <div class="alert alert-info">Aucune masterclass trouvée.</div>
+<div class="alert alert-info">Aucune masterclass trouvée.</div>
 {% endif %}
 
 <p class="mt-4">

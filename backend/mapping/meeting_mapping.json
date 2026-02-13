@@ -33,11 +33,13 @@
   "Best practices + Exam 101": "Erreurs et bonnes pratiques Python",
   "Python errors management": "Erreurs et bonnes pratiques Python",
   "Best practices": "Erreurs et bonnes pratiques Python",
+  "Solving errors": "Erreurs et bonnes pratiques Python",
 
   "Mi-sprint": "Mi-sprint",
   "Mi sprint": "Mi-sprint",
   "Midsprint": "Mi-sprint",
   "Mid-sprint": "Mi-sprint",
+  "Half-sprint": "Mi-sprint",
 
   "DataViz": "Correction DA101",
   "Correction DA101": "Correction DA101",
@@ -48,10 +50,11 @@
   "Conférence Data & Environnement": "Conférence Data & Environnement",
   
   "25%": "Checkpoint 25%",
-  "50%": "Checkpoint 50%",
-  "50 %": "Checkpoint 50%",
+  "25 %": "Checkpoint 25%",
   "75%": "Checkpoint 75%",
+  "75 %": "Checkpoint 75%",
   "100%": "Checkpoint 100%",
+  "100 %": "Checkpoint 100%",
 
   "Intro SQL": "Intro SQL et DataWarehousing",
   "DataWarehousing + SQL": "Intro SQL et DataWarehousing",
@@ -190,6 +193,7 @@
   "Deep Learning  Fundamentals": "Fondamentaux de Deep learning",
   
   "Deep Learning Avancé": "Deep Learning Avancé",
+  "Advanced Deep Learning": "Deep Learning Avancé",
   "Correction Examen Machine Learning Avancé": "Correction Examen Machine Learning Avancé",
 
   "Overview MLOps": "Overview MLOps",
@@ -253,6 +257,7 @@
   "Front/Back/BDD": "Front/Back/BDD",
   "Frontend / React": "Frontend / React",
   "Frontend/React": "Frontend / React",
+  ": React": "Frontend / React",
   "Monitoring & Observability": "Monitoring & Observability",
   "Monitoring best practices": "Monitoring best practices",
   "Data Profiling": "Correction DA101 + Data Profiling",
@@ -337,7 +342,22 @@
   "Concepts, Scripts, IDE & Git": "Concepts, Scripts, IDE & Git",
   "Mise en application de Dépannage réseau": "Mise en application de Dépannage réseau",
   "Question/Réponse Gouvernance": "Question/Réponse Gouvernance",
-  "Point recap - Ansible": "Ansible",
+
+  "Point Recap - Ansible": "Ansible",
+  "Point Recap - Terraform": "Terraform",
+  "Point Recap - Docker": "Docker",
+  "Point Recap - GitLab": "GitLab",
+  "Point Recap - Jenkins": "Jenkins",
+  "Point Recap - Prometheus": "Prometheus",
+  "Point Recap - Kubernetes": "Kubernetes",
+  "Point Recap -- Ansible": "Ansible",
+  "Point Recap -- Terraform": "Terraform",
+  "Point Recap -- Docker": "Docker",
+  "Point Recap -- GitLab": "GitLab",
+  "Point Recap -- Jenkins": "Jenkins",
+  "Point Recap -- Prometheus": "Prometheus",
+  "Point Recap -- Kubernetes": "Kubernetes",
+
   "Ansible": "Ansible",
   "Observabilité": "Observabilité",
   "Observability": "Observabilité",

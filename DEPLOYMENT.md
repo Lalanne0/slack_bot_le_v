@@ -16,12 +16,14 @@ This guide details the steps to deploy the Slack Bot to an Amazon EC2 instance.
 If your instance already has files or running containers and you want a fresh start:
 
 1.  **Stop and remove all containers:**
+
     ```bash
     docker stop $(docker ps -aq)
     docker rm $(docker ps -aq)
     ```
 
 2.  **Clean up Docker system (images, networks, build cache):**
+
     ```bash
     docker system prune -a -f --volumes
     ```
@@ -31,6 +33,7 @@ If your instance already has files or running containers and you want a fresh st
 If you were running the bot directly (without Docker), follow these steps to kill the processes and remove files.
 
 1.  **Stop the running application:**
+
     ```bash
     # CAUTION: This commands kill all python and gunicorn processes.
     pkill -f python
@@ -38,7 +41,8 @@ If you were running the bot directly (without Docker), follow these steps to kil
     ```
     *If `pkill` is not found, you can find the Process ID (PID) with `ps aux | grep python` and use `kill -9 <PID>`.*
 
-2.  **Remove the application files:**
+3.  **Remove the application files:**
+
     ```bash
     cd ~
     # WARNING: Verify the folder name before running rm -rf
@@ -113,7 +117,6 @@ Paste your environment variables into the editor:
 ```
 SLACK_CHANNEL=your_slack_channel_id
 SLACK_TOKEN=xoxb-your-slack-bot-token
-# Add any other required variables
 ```
 
 Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
@@ -143,13 +146,17 @@ docker compose logs -f
 To update the bot with the latest code from GitHub:
 
 1.  Pull the changes:
+
     ```bash
     git pull origin main
     ```
+
 2.  Rebuild and restart the container:
+
     ```bash
     docker compose up -d --build
     ```
+
     This ensures the new code is packaged into the container and the service is restarted with minimal downtime.
 
 ## Troubleshooting
@@ -162,6 +169,7 @@ To update the bot with the latest code from GitHub:
 If you see `failed to bind host port ... 0.0.0.0:80 ... address already in use`, it means another program is using port 80 (e.g., Nginx, Apache, or an old version of your bot).
 
 **1. Find what is using port 80:**
+
 ```bash
 sudo lsof -i :80
 # OR
@@ -169,11 +177,13 @@ sudo netstat -lpnt | grep :80
 ```
 
 **2. Stop the process:**
+
 - If it's **Nginx**: `sudo systemctl stop nginx`
 - If it's **Apache**: `sudo systemctl stop apache2`
 - If it's a **Python/Gunicorn** process: `sudo kill <PID>` (replace `<PID>` with the process ID found in step 1).
 
 **3. Retry starting Docker:**
+
 ```bash
 docker compose up -d --build
 ```

@@ -29,11 +29,13 @@ Application Flask pour suivre la qualité des **masterclasses** et des **animate
 ### Option A: Avec Docker (Recommandé)
 
 1. **Construire et lancer le conteneur :**
+
    ```bash
    docker compose up -d --build
    ```
+
 2. **Accéder à l'application :**
-   Rendez-vous sur http://localhost:80
+   Rendez-vous sur [http://localhost:80](http://localhost:80)
 
 ### Option B: Sans Docker (Développement local)
 

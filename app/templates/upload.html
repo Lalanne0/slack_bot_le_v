@@ -4,6 +4,11 @@
 
 <div class="card">
   <div class="card-body">
+    {% if last_upload_date %}
+    <div class="alert alert-info">
+      📅 Dernier upload le : <strong>{{ last_upload_date }}</strong>
+    </div>
+    {% endif %}
     <form method="post" enctype="multipart/form-data">
       <div class="row g-4">
         <!-- Colonne 1 : Feedback Masterclass -->

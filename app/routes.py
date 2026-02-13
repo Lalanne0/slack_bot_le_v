@@ -14,6 +14,8 @@ from backend.kpi_masterclass import *
 from backend.kpi_comments import *
 from backend.kpi_techaway import *
 from backend.reporting import *
+from backend.utils import meeting_mapping
+from datetime import datetime
 
 ALLOWED_EXTENSIONS = {"csv"}
 bp = Blueprint("main", __name__)
@@ -133,10 +135,20 @@ def upload_files():
         # Sauvegarde unique vers le chemin déjà utilisé par l'app
         df_processed.to_csv(_processed_path(), index=False)
 
+        # Enregistrement de la date et l'heure de l'upload
+        with open("data/last_upload.txt", "w") as f:
+            f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
+
         flash("Fichiers uploadés et traités avec succès.")
         return redirect(url_for("main.dashboard"))
 
-    return render_template("upload.html")
+    # Récupération de la date de dernier upload pour l'affichage
+    last_upload_date = None
+    if os.path.exists("data/last_upload.txt"):
+        with open("data/last_upload.txt", "r") as f:
+            last_upload_date = f.read().strip()
+
+    return render_template("upload.html", last_upload_date=last_upload_date)
 
 
 @bp.route("/dashboard")
@@ -327,9 +339,32 @@ def masterclasses():
 
         # Liste cliquable des masterclass
         col = _masterclass_column(df)
-        masterclasses = sorted(m for m in df[col].dropna().unique())
+        all_masterclasses = sorted(m for m in df[col].dropna().unique())
 
-        return render_template("masterclasses.html", masterclasses=masterclasses)
+        mapped_masterclasses = []
+        other_masterclasses = []
+
+        # Récupération des valeurs de mapping (les noms officiels)
+        mapping_values = set(meeting_mapping.values())
+
+        for mc in all_masterclasses:
+            avg_grade = get_moyenne_masterclass(df, mc)
+            item = {"name": mc, "avg": avg_grade if avg_grade is not None else 0}
+            
+            if mc in mapping_values:
+                mapped_masterclasses.append(item)
+            else:
+                other_masterclasses.append(item)
+
+        # Tri par moyenne décroissante
+        mapped_masterclasses.sort(key=lambda x: x["avg"], reverse=True)
+        other_masterclasses.sort(key=lambda x: x["avg"], reverse=True)
+
+        return render_template(
+            "masterclasses.html", 
+            mapped_masterclasses=mapped_masterclasses, 
+            other_masterclasses=other_masterclasses
+        )
     except Exception as e:
         return f"Erreur : {e}"
 
