@@ -39,6 +39,7 @@ def preprocess_data(df_fr, df_en=None):
     df["Meeting Animator"] = df["Meeting Animator"].fillna("Missing")
     # --- Modif: Normalisation datascientest.com -> liora.io ---
     df["Meeting Animator"] = df["Meeting Animator"].str.replace("@datascientest.com", "@liora.io", regex=False)
+    df["Meeting Animator"] = df["Meeting Animator"].str.replace("@cyberuniversity.com", "@liora.io", regex=False)
     
     df["Meeting Name"] = df["Meeting Name"].fillna("Missing")
     df["Meeting Start Date"] = df["Meeting Start Date"].fillna("01/01/1970 00:00")
@@ -111,6 +112,7 @@ def light_preprocess(df):
     df["Meeting Animator"] = df["Meeting Animator"].fillna("Unknown")
     # --- Modif: Normalisation datascientest.com -> liora.io ---
     df["Meeting Animator"] = df["Meeting Animator"].str.replace("@datascientest.com", "@liora.io", regex=False)
+    df["Meeting Animator"] = df["Meeting Animator"].str.replace("@cyberuniversity.com", "@liora.io", regex=False)
 
     df['Meeting Start Date'] = pd.to_datetime(df['Meeting Start Date'], errors='coerce')
     df.dropna(inplace=True)

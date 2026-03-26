@@ -70,7 +70,12 @@ def _masterclass_column(df: pd.DataFrame) -> str:
     )
     
 
-@bp.route("/", methods=["GET", "POST"])
+@bp.route("/")
+def index():
+    return redirect(url_for("main.dashboard"))
+
+
+@bp.route("/upload", methods=["GET", "POST"])
 def upload_files():
     if request.method == "POST":
         # Récupération des 4 fichiers potentiels
