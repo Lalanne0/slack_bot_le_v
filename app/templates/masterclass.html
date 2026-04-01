@@ -1,24 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-4">👨‍🏫 Détail de la masterclass : {{ masterclass }}</h2>
+<h2 class="mb-4">Détail de la masterclass : {{ masterclass }}</h2>
+
+<!-- Formulaire pour choisir la période temporelle pour les commentaires -->
+<form method="get" class="row g-3 align-items-center mb-4">
+  <div class="col-auto">
+    <label for="days" class="col-form-label fw-bold">Période (jours) :</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" id="days" name="days" class="form-control" value="{{ days }}" min="1">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Filtrer</button>
+  </div>
+</form>
 
 <div class="row g-4">
   <section class="col-md-6">
     <div class="card h-100">
       <div class="card-header">
-        <h3 class="h6 m-0">⬇️ Statistiques générales ⬇️</h3>
+        <h3 class="h6 m-0">Statistiques générales</h3>
       </div>
       <div class="card-body">
         <ul class="list-unstyled mb-0">
-          <li><strong>🎯 Sessions totales :</strong> {{ sessions_total }}</li>
-          <li><strong>📊 Moyenne générale :</strong> {{ moyenne_generale }}</li>
-          <li><strong>🏆 Classement :</strong> {{ classement }}</li>
-          <li><strong>⭐ Meilleur animateur :</strong>
-            {% if best_label %} {{ best_label }} {% else %} Aucun animateur disponible. {% endif %}
-          </li>
-          <li><strong>❌ Pire animateur :</strong>
-            {% if worst_label %} {{ worst_label }} {% else %} Aucun animateur disponible. {% endif %}
-          </li>
+          <li><strong>Sessions totales :</strong> {{ sessions_total }}</li>
+          <li><strong>Moyenne générale :</strong> {{ moyenne_generale }}</li>
+          <li><strong>Classement :</strong> {{ classement }}</li>
         </ul>
       </div>
     </div>
@@ -27,18 +34,18 @@
   <section class="col-md-6">
     <div class="card h-100">
       <div class="card-header">
-        <h3 class="h6 m-0">⬇️ Derniers 30 jours ⬇️</h3>
+        <h3 class="h6 m-0">Derniers 30 jours</h3>
       </div>
       <div class="card-body">
         <ul class="list-unstyled">
-          <li><strong>📅 Sessions :</strong> {{ sessions_30j }}</li>
-          <li><strong>📈 Moyenne :</strong>
+          <li><strong>Sessions :</strong> {{ sessions_30j }}</li>
+          <li><strong>Moyenne :</strong>
             {% if moyenne_30j is not none %} {{ moyenne_30j }} {% else %} Aucune donnée {% endif %}
           </li>
-          <li><strong>🏆 Classement :</strong> {{ classement_30j }}</li>
+          <li><strong>Classement :</strong> {{ classement_30j }}</li>
         </ul>
 
-        <h4 class="h6 mt-3">📆 Détail des sessions</h4>
+        <h4 class="h6 mt-3">Détail des sessions</h4>
         {% if sessions_30j_table.rows %}
           <div class="table-responsive">
             <table class="table table-sm table-striped table-hover">
@@ -70,7 +77,30 @@
 
 <hr class="my-4">
 
-<h3 class="mb-3">📚 Animateurs de cette MC</h3>
+<h3 class="mb-3">Avis négatifs ({{ days }} derniers jours)</h3>
+{% if comments_negatifs %}
+  <div class="list-group mb-4">
+    {% for c in comments_negatifs %}
+    <div class="list-group-item">
+      <div class="d-flex w-100 justify-content-between align-items-center">
+        <h5 class="mb-1 fw-bold">{{ c['Meeting Animator'] }} <span class="badge bg-danger ms-2">{{ c['Content Grade'] }}/5</span></h5>
+        <small class="text-muted">{{ c['Meeting Start Date'] | string | truncate(10, True, '') if c['Meeting Start Date'] else '' }}</small>
+      </div>
+      <p class="mb-2 mt-2 fst-italic">"{{ c['Comment'] }}"</p>
+      <small class="text-secondary">
+        Écrit par <a href="https://nexus.datascientest.com/user/{{ c['User ID'] }}" target="_blank" class="text-decoration-none">{{ c['User Fullname'] }}</a>
+        - <a href="https://nexus.datascientest.com/meeting/{{ c['Meeting ID'] }}" target="_blank" class="text-decoration-none">Lien vers la session (Nexus)</a>
+      </small>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-success mb-4">Aucun commentaire négatif (note &le; 3) sur cette période. Bravo !</div>
+{% endif %}
+
+<hr class="my-4">
+
+<h3 class="mb-3">Animateurs de cette MC</h3>
 {% if mc_table.rows %}
   <div class="card">
     <div class="card-body p-0">

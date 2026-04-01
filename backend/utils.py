@@ -16,6 +16,9 @@ with open(MAPPING_DIR / "meeting_mapping.json", "r", encoding="utf-8") as f:
 with open(MAPPING_DIR / "role_mapping.json", "r", encoding="utf-8") as f:
     role_mapping = json.load(f)
 
+with open(MAPPING_DIR / "pole_mapping.json", "r", encoding="utf-8") as f:
+    pole_mapping = json.load(f)
+
 
 # Fonction pour nettoyer les noms de masterclass avec dictionnaire JSON
 def get_mc_name(meeting_name):

@@ -6,14 +6,17 @@
 
 <form method="get" class="row g-3 mb-4">
   <!-- Multi-choix des notes -->
-  <div class="col-md-4">
-    <label for="grades" class="form-label">Filtrer par note sur le contenu</label>
-    <select id="grades" name="grades" class="form-select" multiple size="5" aria-label="Filtrer par note">
+  <div class="col-md-5">
+    <label class="form-label d-block">Filtrer par note sur le contenu</label>
+    <div class="d-flex flex-wrap gap-3 mt-2">
       {% for g in [1,2,3,4,5] %}
-        <option value="{{ g }}" {% if g in selected_grades %}selected{% endif %}>{{ g }} ★</option>
+      <div class="form-check form-check-inline m-0">
+        <input class="form-check-input" type="checkbox" name="grades" id="grade_{{ g }}" value="{{ g }}" {% if g in selected_grades %}checked{% endif %}>
+        <label class="form-check-label" for="grade_{{ g }}">{{ g }} ★</label>
+      </div>
       {% endfor %}
-    </select>
-    <div class="form-text">Par défaut : 1, 2, 3. Ctrl + clic pour sélectionner plusieurs notes.</div>
+    </div>
+    <div class="form-text mt-2">Par défaut : 1, 2, 3.</div>
   </div>
 
   <!-- Slider longueur minimale -->

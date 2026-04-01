@@ -14,7 +14,7 @@ from backend.kpi_masterclass import *
 from backend.kpi_comments import *
 from backend.kpi_techaway import *
 from backend.reporting import *
-from backend.utils import meeting_mapping
+from backend.utils import meeting_mapping, pole_mapping
 from datetime import datetime
 
 ALLOWED_EXTENSIONS = {"csv"}
@@ -241,6 +241,10 @@ def animateurs():
         col = _animator_column(df)  # colonne contenant le nom d'animateur
         role_col = "Animator Role" if "Animator Role" in df.columns else ("Role" if "Role" in df.columns else None)
 
+        start_30 = datetime.now() - timedelta(days=30)
+        df_30j = filter_by_date_range(df, start_date=start_30)
+        active_animators_30j = set(df_30j[col].dropna().unique()) if col in df_30j.columns else set()
+
         if role_col:
             sub = df[[col, role_col]].dropna().drop_duplicates()
             grouped = {}
@@ -251,20 +255,27 @@ def animateurs():
                     continue
                 if q and q not in name.lower():
                     continue
-                grouped.setdefault(role, set()).add(name)
+                # Stocker sous forme de dict
+                item = {"name": name, "active": name in active_animators_30j}
+                if role not in grouped:
+                    grouped[role] = []
+                if name not in [x["name"] for x in grouped[role]]:
+                    grouped[role].append(item)
 
             # tri des rôles et des noms + supprime les rôles vides après filtre
             animateurs_by_role = {
-                role: sorted(names, key=lambda x: x.lower())
-                for role, names in sorted(grouped.items(), key=lambda x: x[0].lower())
-                if names
+                role: sorted(items, key=lambda x: x["name"].lower())
+                for role, items in sorted(grouped.items(), key=lambda x: x[0].lower())
+                if items
             }
         else:
             # fallback si pas de colonne rôle
             names = [str(a).strip() for a in df[col].dropna().unique()]
             if q:
                 names = [n for n in names if q in n.lower()]
-            animateurs_by_role = {"Autres": sorted(names, key=lambda x: x.lower())}
+            
+            items = [{"name": n, "active": n in active_animators_30j} for n in names]
+            animateurs_by_role = {"Autres": sorted(items, key=lambda x: x["name"].lower())}
 
         return render_template("animateurs.html", animateurs_by_role=animateurs_by_role, q=request.args.get("q", ""))
     except Exception as e:
@@ -311,8 +322,17 @@ def animateur_detail(animateur: str):
         worst_label = (
             f"{worst['Masterclass']}" if worst is not None else "Aucune masterclass trouvée")
         
-        feedback = get_last_feedback(df, animateur)    
+        days = request.args.get("days", default=30, type=int)
+        negative_only = request.args.get("negative_only", type=int)
+        seuil = {1, 2, 3} if negative_only else {1, 2, 3, 4, 5}
         
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=max(1, days))
+        
+        col_anim = _animator_column(df)
+        df_animator_filter = df[df[col_anim] == animateur]
+        comments_df = get_comments(df_animator_filter, seuil=seuil, longueur_min_avis=3, start_date=start_date, end_date=end_date)
+        comments = comments_df.to_dict('records') if not comments_df.empty else []
         
         context = {
             "animateur": animateur,
@@ -326,7 +346,9 @@ def animateur_detail(animateur: str):
             "classement_30j": classement_30j if classement_30j else "Non classé",
             "sessions_30j_table": payload_sessions_30j,
             "mc_table": payload_mc,
-            "feedback": feedback,
+            "days": days,
+            "negative_only": bool(negative_only),
+            "comments": comments,
         }
         return render_template("animateur.html", **context)
 
@@ -361,14 +383,42 @@ def masterclasses():
             else:
                 other_masterclasses.append(item)
 
-        # Tri par moyenne décroissante
-        mapped_masterclasses.sort(key=lambda x: x["avg"], reverse=True)
+        # Regrouper les masterclasses officielles par pôle
+        masterclasses_by_pole = {}
+        for item in mapped_masterclasses:
+            poles = pole_mapping.get(item["name"], [])
+            if not poles:
+                poles = ["Non assigné"]
+                
+            for p in poles:
+                if p not in masterclasses_by_pole:
+                    masterclasses_by_pole[p] = []
+                masterclasses_by_pole[p].append(item)
+                
+        # Tri des listes par moyenne décroissante et calcul de la moyenne du pôle
+        pole_stats = {}
+        for p in masterclasses_by_pole:
+            masterclasses_by_pole[p].sort(key=lambda x: x["avg"], reverse=True)
+            valid_avgs = [item["avg"] for item in masterclasses_by_pole[p] if item["avg"] > 0]
+            if valid_avgs:
+                pole_stats[p] = round(sum(valid_avgs) / len(valid_avgs), 2)
+            else:
+                pole_stats[p] = 0
+            
+        # Tri des pôles par ordre alphabétique, avec 'Non assigné' à la fin
+        sorted_poles = sorted([p for p in masterclasses_by_pole.keys() if p != "Non assigné"])
+        if "Non assigné" in masterclasses_by_pole:
+            sorted_poles.append("Non assigné")
+            
+        ordered_masterclasses_by_pole = {p: masterclasses_by_pole[p] for p in sorted_poles}
+
         other_masterclasses.sort(key=lambda x: x["avg"], reverse=True)
 
         return render_template(
             "masterclasses.html", 
-            mapped_masterclasses=mapped_masterclasses, 
-            other_masterclasses=other_masterclasses
+            masterclasses_by_pole=ordered_masterclasses_by_pole, 
+            other_masterclasses=other_masterclasses,
+            pole_stats=pole_stats
         )
     except Exception as e:
         return f"Erreur : {e}"
@@ -381,14 +431,15 @@ def masterclass_detail(masterclass: str):
     """
     try:
         df = light_preprocess(_load_processed_df())
+        
+        days = request.args.get("days", default=30, type=int)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=max(1, days))
 
         # Métriques générales
         sessions_total = get_nb_sessions_masterclass(df, masterclass)
         moyenne_generale = get_moyenne_masterclass(df, masterclass)
         classement = get_position_classement_masterclass(df, masterclass)
-
-        best = get_mc_best_animateur(df, masterclass)
-        worst = get_mc_worst_animateur(df, masterclass)
 
         # 30 derniers jours
         sessions_30j = get_nb_sessions_masterclass_30j(df, masterclass)
@@ -408,23 +459,22 @@ def masterclass_detail(masterclass: str):
         payload_sessions_30j = df_table_payload(df_mc_animateurs_30j)
         payload_mc = df_table_payload(df_mc_animateurs)
 
-        best_label = (
-            f"{best['Meeting Animator']}" if best is not None else "Aucun animateur trouvé")
-        worst_label = (
-            f"{worst['Meeting Animator']}" if worst is not None else "Aucun animateur trouvé")
+        df_mc_filter = df[df["Masterclass"] == masterclass]
+        comments_negatifs_df = get_comments(df_mc_filter, seuil=3, longueur_min_avis=3, start_date=start_date, end_date=end_date)
+        comments_negatifs = comments_negatifs_df.to_dict('records') if not comments_negatifs_df.empty else []
 
         context = {
             "masterclass": masterclass,
             "sessions_total": sessions_total,
             "moyenne_generale": moyenne_generale,
             "classement": classement if classement else "Non classé",
-            "best_label": best_label,
-            "worst_label": worst_label,
             "sessions_30j": sessions_30j,
             "moyenne_30j": round(moyenne_30j, 2) if moyenne_30j else None,
             "classement_30j": classement_30j if classement_30j else "Non classé",
             "sessions_30j_table": payload_sessions_30j,
-            "mc_table": payload_mc
+            "mc_table": payload_mc,
+            "days": days,
+            "comments_negatifs": comments_negatifs
         }
         return render_template("masterclass.html", **context)
 

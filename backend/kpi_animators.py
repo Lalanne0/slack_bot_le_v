@@ -11,7 +11,7 @@ def wall_of_fame(df, seuil=4.8, min_sessions=2):
     df = df.copy()
     df_30j = filter_by_date_range(df, start_date=datetime.now() - timedelta(days=30))
     animateurs = df_30j['Meeting Animator'].unique()
-    animateurs = [a for a in animateurs if get_role(a) not in ['Old', 'PM']]
+    animateurs = [a for a in animateurs if get_role(a) not in ['PM']]
     wall = []
     for animateur in animateurs:
         moyenne = get_moyenne_animateur(df_30j, animateur)
@@ -56,7 +56,7 @@ def wall_of_not_fame(df, seuil=4.0, min_sessions=2):
     df = df.copy()
     df_30j = filter_by_date_range(df, start_date=datetime.now() - timedelta(days=30))
     animateurs = df_30j['Meeting Animator'].unique()
-    animateurs = [a for a in animateurs if get_role(a) not in ['Old', 'PM']]
+    animateurs = [a for a in animateurs if get_role(a) not in ['PM']]
     wall = []
     for animateur in animateurs:
         moyenne = get_moyenne_animateur(df_30j, animateur)

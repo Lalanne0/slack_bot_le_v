@@ -24,23 +24,25 @@
 
   <div class="col-md-4">
     <label for="min_sessions" class="form-label">Sessions minimales</label>
-    <div class="d-flex align-items-center gap-2">
-      <input type="range" class="form-range" id="min_sessions" name="min_sessions" min="1" max="100" step="1"
+    <div class="input-group">
+      <input type="number" class="form-control" id="min_sessions" name="min_sessions" min="1" step="1"
         value="{{ min_sessions }}">
-      <span class="badge text-bg-secondary">{{ min_sessions }}</span>
+      <span class="input-group-text">sessions</span>
     </div>
     <div class="form-text">Nombre minimal de sessions pour être affiché sur le leaderboard.</div>
   </div>
 
   <!-- NOUVEAU : filtre multi-rôles -->
   <div class="col-md-6">
-    <label for="role" class="form-label">Filtrer par rôle (Animator Role)</label>
-    <select id="role" name="role" class="form-select" multiple>
+    <label class="form-label d-block">Filtrer par rôle (Animator Role)</label>
+    <div class="d-flex flex-wrap gap-3 mt-2">
       {% for r in roles %}
-        <option value="{{ r }}" {% if r in selected_roles %}selected{% endif %}>{{ r }}</option>
+      <div class="form-check form-check-inline m-0">
+        <input class="form-check-input" type="checkbox" name="role" id="role_{{ loop.index }}" value="{{ r }}" {% if r in selected_roles %}checked{% endif %}>
+        <label class="form-check-label" for="role_{{ loop.index }}">{{ r }}</label>
+      </div>
       {% endfor %}
-    </select>
-    <div class="form-text">Maintenez Ctrl (Windows) ou ⌘ (Mac) pour une sélection multiple.</div>
+    </div>
   </div>
 
   <div class="col-12">

@@ -27,8 +27,13 @@
         <ul class="list-group list-group-flush">
           {% for a in names %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <a href="{{ url_for('main.animateur_detail', animateur=a) }}" class="text-decoration-none">{{ a }}</a>
-              <a href="{{ url_for('main.animateur_detail', animateur=a) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+              <div>
+                <a href="{{ url_for('main.animateur_detail', animateur=a.name) }}" class="text-decoration-none {% if not a.active %}text-muted{% else %}fw-bold{% endif %}">{{ a.name }}</a>
+                {% if not a.active %}
+                  <span class="badge bg-warning text-dark ms-2">Inactif</span>
+                {% endif %}
+              </div>
+              <a href="{{ url_for('main.animateur_detail', animateur=a.name) }}" class="btn btn-sm btn-outline-primary">Voir</a>
             </li>
           {% endfor %}
         </ul>

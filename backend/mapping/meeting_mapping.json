@@ -49,18 +49,23 @@
   "DE101  Correction": "Correction DE101",
   "DE101 Correction": "Correction DE101",
 
-  "Conférence Data & Environnement": "Conférence Data & Environnement",
   
   "25%": "Checkpoint 25%",
   "25 %": "Checkpoint 25%",
+  "Point 25": "Checkpoint 25%",
+  "50%": "Checkpoint 50%",
+  "50 %": "Checkpoint 50%",
+  "Point 50": "Checkpoint 50%",
   "75%": "Checkpoint 75%",
   "75 %": "Checkpoint 75%",
+  "Point 75": "Checkpoint 75%",
   "100%": "Checkpoint 100%",
   "100 %": "Checkpoint 100%",
+  "Point 100": "Checkpoint 100%",
 
   "Intro SQL": "Intro SQL et DataWarehousing",
   "DataWarehousing + SQL": "Intro SQL et DataWarehousing",
-  " SQL": "SQL et DataWarehousing",
+  " SQL": "Intro SQL et DataWarehousing",
 
   "Business Intelligence": "Business Intelligence",
   "Bussiness Intelligence": "Business Intelligence",
@@ -109,11 +114,13 @@
   "Programming tools": "Toolings",
 
   "Introduction aux Bases de données": "Introduction aux Bases de données",
-  "Base de données": "Introduction aux Bases de données",
   "Bases de données": "Introduction aux Bases de données",
   "Introduction to Databases": "Introduction aux Bases de données",
   "Introduction to Data bases": "Introduction aux Bases de données",
   "Intro to databases": "Introduction aux Bases de données",
+  "Databases": "Bases de données",
+  "Data bases": "Bases de données",
+  "Base de données": "Bases de données",
 
   "Introduction aux Systèmes Distribués": "Introduction aux Systèmes Distribués",
   "Systèmes Distribués": "Introduction aux Systèmes Distribués",
@@ -123,6 +130,8 @@
   "Pipeline ETL": "Pipelines ETL",
   "Pipelines  ETL": "Pipelines ETL",
 
+  "Introduction DevOps": "Introduction au DevOps",
+  "Intro DevOps": "Introduction au DevOps",
   "Introduction au DevOps": "Introduction au DevOps",
   "Introduction to DevOps": "Introduction au DevOps",
 
@@ -131,8 +140,6 @@
   "Agility Methods": "Méthodes agiles",
 
   "GitOps": "GitOps",
-
-  " SRE": "SRE",
 
   "UX / UI Design": "UX / UI Design",
   "UX/UI Design": "UX / UI Design",
@@ -192,6 +199,7 @@
   "Introduction to Deep Learning": "Fondamentaux de Deep learning",
   "Deep Learning Fundamentals": "Fondamentaux de Deep learning",
   "Intro DL": "Fondamentaux de Deep learning",
+  "Intro Deep Learning": "Fondamentaux de Deep learning",
   "Fondamentaux Deep Learning": "Fondamentaux de Deep learning",
   "Deep Learning  Fundamentals": "Fondamentaux de Deep learning",
   
@@ -206,6 +214,7 @@
   "Introduction au MLOPS": "Intro MLOps",
   "Introduction au ML Ops": "Intro MLOps",
   "Introduction to ML Ops": "Intro MLOps",
+  "Introduction to MLOps": "Intro MLOps",
   "Introduction MLOps": "Intro MLOps",
 
   "Introduction à la Data et rôle du DPM": "Introduction à la Data et rôle du DPM",
@@ -225,12 +234,17 @@
   "Manager une équipe data": "Manager une équipe data",
 
   "Prompt Engineer - Presentation et lancement des projets": "Prompt Engineer - Presentation et lancement des projets",
-  "Prise en main de Copilot, Chat Gpt": "Prompt Engineer - Prise en main de Copilot, Chat Gpt, Dall-E et notebookLM",
-  "Prise en main de chat gpt, Dall-E": "Prompt Engineer - Prise en main de Copilot, Chat Gpt, Dall-E et notebookLM",
-  "Comprendre et utiliser une API": "Prompt Engineer - Comprendre et utiliser une API",
-  "Créer des automatisations sans coder avec Zapier": "Prompt Engineer - Créer des automatisations sans coder avec Zapier",
-  "Génération de chatbot": "Prompt Engineer - Génération de chatbot",
-  "Automatisation et création d'agents IA avec N8N": "Prompt Engineer - Automatisation et création d'agents IA avec N8N",
+  "Prise en main de Copilot, Chat Gpt": "Prise en main de Copilot, Chat Gpt, Dall-E et notebookLM",
+  "Prise en main de chat gpt, Dall-E": "Prise en main de Copilot, Chat Gpt, Dall-E et notebookLM",
+  "Comprendre et utiliser une API": "Comprendre et utiliser une API",
+  "Créer des automatisations sans coder avec Zapier": "Créer des automatisations sans coder avec Zapier",
+  "Génération de chatbot": "Génération de chatbot",
+  "Automatisation et création d'agents IA avec N8N": "Automatisation et création d'agents IA avec N8N",
+  "automatisations sans coder avec n8n": "Automatisations sans coder avec n8n",
+
+  "Travail collaboratif": "Travail collaboratif",
+  "UX/UI Design - Figma": "UX/UI Design - Figma",
+  "Figma": "UX/UI Design - Figma",
 
   "Transformers & Hugging Face": "Transformers & Hugging Face",
   "Transformers et Hugging Face": "Transformers & Hugging Face",
@@ -270,6 +284,12 @@
   "Prometheus & Grafana": "Prometheus & Grafana",
   "Prometheus et Grafana": "Prometheus & Grafana",
   "Django": "Django",
+  "TP Django": "TP Django",
+  "TP - Django": "TP Django",
+  "TP - Sécuriser son app": "TP Sécuriser son app",
+  "TP Sécuriser son app": "TP Sécuriser son app",
+  "TP - Frontend": "TP Frontend",
+  "TP Frontend": "TP Frontend",
   "Front/Back/BDD": "Front/Back/BDD",
   "Frontend / React": "Frontend / React",
   "Frontend/React": "Frontend / React",
@@ -300,7 +320,7 @@
   "Architecture Hybride": "Architecture Hybride",
   "Politique de filtrage": "Politique de filtrage",
   "Analyse des tendances": "Analyse des tendances",
-  "Analyse des tendances": "Analyse des tendances",
+  "Sécuriser son app": "Sécuriser son app",
 
   "Notion pour la veille": "Notion pour la veille technologique",
 
@@ -322,7 +342,9 @@
   "Gouvernance": "Gouvernance",
   "Mentorat Projet": "Mentorat Projet",
 
-  "Climat & Data": "Climat & Data",
+  "Climat & Data": "Conférence Data & Environnement",
+  "Conférence Data & Environnement": "Conférence Data & Environnement",
+
   "Forensique": "Forensique",
   
   "Questions/Réponses ISO 27001 LI": "Questions/Réponses ISO 27001 LI",
@@ -361,6 +383,11 @@
   "Mise en application de Dépannage réseau": "Mise en application de Dépannage réseau",
   "Question/Réponse Gouvernance": "Question/Réponse Gouvernance",
 
+  "Introduction Docker": "Introduction Docker",
+  "Intro Docker": "Introduction Docker",
+  "Introduction Skill Builder": "Introduction Skillbuilder",
+  "Skill Builder": "Introduction Skillbuilder",
+
   "Point Recap - Ansible": "Ansible",
   "Point Recap - Terraform": "Terraform",
   "Point Recap - Docker": "Docker",
@@ -377,6 +404,7 @@
   "Point Recap -- Kubernetes": "Kubernetes",
 
   "Ansible": "Ansible",
+  "Typescript": "Typescript",
   "Observabilité": "Observabilité",
   "Observability": "Observabilité",
 
@@ -384,6 +412,8 @@
   "Approche contractuel": "Projet SI",
   "Analyse fonctionnelle du besoin": "Analyse fonctionnelle du besoin",
   "Accompagnement au changement et communication": "Accompagnement au changement et communication",
+
+  " SRE": "SRE",
   
   "TECHFORALL-N0 - TP 1": "TECHFORALL-N0 - TP 1",
   "TECHFORALL-N0 - TP 2": "TECHFORALL-N0 - TP 2",

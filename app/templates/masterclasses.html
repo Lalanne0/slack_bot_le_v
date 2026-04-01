@@ -3,25 +3,35 @@
 
 <h2 class="mb-4">👨‍🏫 Masterclasses</h2>
 
-{% if mapped_masterclasses or other_masterclasses %}
+{% if masterclasses_by_pole or other_masterclasses %}
 
-{% if mapped_masterclasses %}
-<div class="card mb-4">
-  <div class="card-header bg-success text-white">
-    <h3 class="h6 m-0">Masterclasses Officielles (triées par satisfaction)</h3>
-  </div>
-  <ul class="list-group list-group-flush">
-    {% for item in mapped_masterclasses %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div>
-        <a href="{{ url_for('main.masterclass_detail', masterclass=item.name) }}"
-          class="text-decoration-none fw-bold">{{ item.name }}</a>
-      </div>
-      <span class="badge bg-primary rounded-pill">{{ item.avg }}/5</span>
-    </li>
+{% if masterclasses_by_pole %}
+  <div class="mb-4">
+    <h3 class="h6 mb-3">MC par pôle et satisfaction</h3>
+    {% for pole, items in masterclasses_by_pole.items() %}
+      <details class="mb-3 border rounded" {% if loop.first %}open{% endif %}>
+        <summary class="py-2 px-3 d-flex justify-content-between align-items-center" style="cursor: pointer;">
+          <h4 class="h6 m-0 text-dark" style="display: inline;">{{ pole }}
+            {% if pole_stats.get(pole, 0) > 0 %}
+              <span class="badge bg-light text-dark border ms-2">{{ "%.2f"|format(pole_stats[pole]) }}/5</span>
+            {% endif %}
+          </h4>
+          <span class="badge bg-secondary rounded-pill">{{ items|length }}</span>
+        </summary>
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('main.masterclass_detail', masterclass=item.name) }}"
+                class="text-decoration-none fw-bold">{{ item.name }}</a>
+            </div>
+            <span class="badge bg-primary rounded-pill">{{ item.avg }}/5</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
     {% endfor %}
-  </ul>
-</div>
+  </div>
 {% endif %}
 
 {% if other_masterclasses %}

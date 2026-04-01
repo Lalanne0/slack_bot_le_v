@@ -26,13 +26,13 @@
 
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.upload_files') }}">Upload</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.animateurs') }}">Animateurs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.masterclasses') }}">Masterclasses</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.leaderboard') }}">Leaderboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.slack_bot') }}">Slack Bot</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.techaway') }}">TechAway</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.commentaires') }}">Commentaires</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.upload_files' %}active fw-bold{% endif %}" href="{{ url_for('main.upload_files') }}">Upload</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint in ['main.animateurs', 'main.animateur_detail'] %}active fw-bold{% endif %}" href="{{ url_for('main.animateurs') }}">Animateurs</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint in ['main.masterclasses', 'main.masterclass_detail'] %}active fw-bold{% endif %}" href="{{ url_for('main.masterclasses') }}">Masterclasses</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.leaderboard' %}active fw-bold{% endif %}" href="{{ url_for('main.leaderboard') }}">Leaderboard</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.slack_bot' %}active fw-bold{% endif %}" href="{{ url_for('main.slack_bot') }}">Slack Bot</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.techaway' %}active fw-bold{% endif %}" href="{{ url_for('main.techaway') }}">TechAway</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.commentaires' %}active fw-bold{% endif %}" href="{{ url_for('main.commentaires') }}">Commentaires</a></li>
                 </ul>
 
             </div>
