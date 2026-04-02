@@ -181,7 +181,7 @@ def dashboard():
                 n_neg = row.get("Nombre Avis Négatifs", 0)
                 n_sess = row.get("Nombre Sessions 30j", 0)
 
-                comments_html += f"<div>📉 {mc} - {n_neg} avis négatifs sur {n_sess} sessions</div>"
+                comments_html += f"<div class='mb-2 text-primary fw-bold'>{mc} - {n_neg} avis négatifs sur {n_sess} sessions</div>"
 
                 avis_list = row.get("Avis Négatifs", [])
                 if isinstance(avis_list, pd.DataFrame):
@@ -201,22 +201,20 @@ def dashboard():
                     date_val = avis["Meeting Start Date"]
                     date_str = format_date(date_val)
 
-
                     animator = avis.get("Meeting Animator", "")
                     comment_text = (avis.get("Comment") or "").strip().replace("\n", " ")
                     author_name = avis.get("User Fullname", "")
                     rating = avis.get("Answer") or avis.get("Content Grade") or avis.get("Note")
                     rating_str = f"{rating}/5" if rating is not None else "—/5"
-                    
 
                     comments_html += (
-                        f"<div>🔸 <strong>Date</strong> : <a href=\"{mc_link}\" target=\"_blank\" rel=\"noopener\">{date_str}</a></div>"
-                        f"<div>🧑 <strong>Animateur</strong> : {animator}</div>"
-                        f"<div>📝 <strong>Commentaire</strong> : <em>{comment_text}</em></div>"
-                        f"<div>✍ <strong>Auteur</strong> : "
-                        f"<a href=\"{user_link}\" target=\"_blank\" rel=\"noopener\">{author_name}</a></div>"
-                        f"<div>⭐ <strong>Note</strong> : {rating_str}</div>"
-                        f"<br>"
+                        f"<div class='ps-3 border-start mb-3'>"
+                        f"<div><span class='text-muted'>Date :</span> <a href=\"{mc_link}\" target=\"_blank\" rel=\"noopener\" class='text-decoration-none'>{date_str}</a></div>"
+                        f"<div><span class='text-muted'>Animateur :</span> {animator}</div>"
+                        f"<div><span class='text-muted'>Auteur :</span> <a href=\"{user_link}\" target=\"_blank\" rel=\"noopener\" class='text-decoration-none'>{author_name}</a></div>"
+                        f"<div><span class='text-muted'>Note :</span> {rating_str}</div>"
+                        f"<div class='mt-1 fst-italic'>\"{comment_text}\"</div>"
+                        f"</div>"
                     )
 
                 comments_html += "<hr>"
@@ -405,6 +403,26 @@ def masterclasses():
             else:
                 pole_stats[p] = 0
             
+        # Couleurs dynamiques HSL pour les pôles
+        pole_colors = {}
+        valid_stats = [v for v in pole_stats.values() if v > 0]
+        if valid_stats:
+            min_s = min(valid_stats)
+            max_s = max(valid_stats)
+            for p, val in pole_stats.items():
+                if val <= 0:
+                    pole_colors[p] = "background-color: #6c757d; color: white;"
+                else:
+                    if max_s == min_s:
+                        pct = 0.5
+                    else:
+                        pct = (val - min_s) / (max_s - min_s)
+                    hue = int(pct * 120)
+                    pole_colors[p] = f"background-color: hsl({hue}, 70%, 45%); color: white;"
+        else:
+            for p in pole_stats:
+                pole_colors[p] = "background-color: #6c757d; color: white;"
+            
         # Tri des pôles par ordre alphabétique, avec 'Non assigné' à la fin
         sorted_poles = sorted([p for p in masterclasses_by_pole.keys() if p != "Non assigné"])
         if "Non assigné" in masterclasses_by_pole:
@@ -418,7 +436,8 @@ def masterclasses():
             "masterclasses.html", 
             masterclasses_by_pole=ordered_masterclasses_by_pole, 
             other_masterclasses=other_masterclasses,
-            pole_stats=pole_stats
+            pole_stats=pole_stats,
+            pole_colors=pole_colors
         )
     except Exception as e:
         return f"Erreur : {e}"
@@ -783,6 +802,13 @@ def commentaires():
         import traceback
         traceback.print_exc()
         return f"Erreur : {e}"
+
+
+@bp.route("/set_language/<lang>")
+def set_language(lang):
+    if lang in ['FR', 'EN', 'ALL']:
+        session['lang_filter'] = lang
+    return redirect(request.referrer or url_for('main.dashboard'))
 
 
 def register_routes(app):

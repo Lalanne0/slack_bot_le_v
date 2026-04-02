@@ -34,7 +34,16 @@
                     <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.techaway' %}active fw-bold{% endif %}" href="{{ url_for('main.techaway') }}">TechAway</a></li>
                     <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.commentaires' %}active fw-bold{% endif %}" href="{{ url_for('main.commentaires') }}">Commentaires</a></li>
                 </ul>
-
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <div class="btn-group btn-group-sm mt-1" role="group">
+                            {% set current_lang = session.get('lang_filter', 'ALL') %}
+                            <a href="{{ url_for('main.set_language', lang='ALL') }}" class="btn btn-outline-secondary {% if current_lang == 'ALL' %}active{% endif %}">Toutes Langues</a>
+                            <a href="{{ url_for('main.set_language', lang='FR') }}" class="btn btn-outline-secondary {% if current_lang == 'FR' %}active{% endif %}">FR</a>
+                            <a href="{{ url_for('main.set_language', lang='EN') }}" class="btn btn-outline-secondary {% if current_lang == 'EN' %}active{% endif %}">EN</a>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

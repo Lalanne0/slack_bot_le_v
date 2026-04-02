@@ -4,6 +4,8 @@
 from backend.utils import *
 
 
+from flask import session, has_request_context
+
 # Prétraitement des données brutes
 def preprocess_data(df_fr, df_en=None):
     """
@@ -13,17 +15,28 @@ def preprocess_data(df_fr, df_en=None):
     Answer,Meeting Animator,Meeting Name,Meeting ID,Meeting Start Date,Project ID
 
     Out:
-    Cohort ID, User ID, User Fullname, Animator Grade, Content Grade, Comment,
+    Language, Cohort ID, User ID, User Fullname, Animator Grade, Content Grade, Comment,
     Meeting Animator, Meeting Name, Meeting ID, Meeting Start Date, Masterclass, 
     Animator Role
     """
     
-    if df_en is not None:
-        df = pd.concat([df_fr, df_en])
-    else:
-        df = df_fr
+    dfs = []
+    if df_fr is not None:
+        dff = df_fr.copy()
+        dff["Language"] = "FR"
+        dfs.append(dff)
     
-    df = df[['Survey Answer Date', 'Cohort ID', 'User ID', 'User Fullname', 'Meeting Animator',
+    if df_en is not None:
+        dfe = df_en.copy()
+        dfe["Language"] = "EN"
+        dfs.append(dfe)
+        
+    if not dfs:
+        return None
+        
+    df = pd.concat(dfs, ignore_index=True)
+    
+    df = df[['Language', 'Survey Answer Date', 'Cohort ID', 'User ID', 'User Fullname', 'Meeting Animator',
             'Meeting Name', 'Meeting ID', 'Meeting Start Date', 'Question ID', 'Answer']]
     
     df = df.copy()
@@ -69,7 +82,7 @@ def preprocess_data(df_fr, df_en=None):
     }
     
     df["Answer_Type"] = df["Question ID"].map(qid_map)
-    meta_cols = ["Cohort ID","User ID","User Fullname",
+    meta_cols = ["Language", "Cohort ID","User ID","User Fullname",
                  "Meeting Animator","Meeting Name","Meeting ID","Meeting Start Date"]
     pivoted = (
         df.pivot_table(
@@ -115,5 +128,11 @@ def light_preprocess(df):
     df["Meeting Animator"] = df["Meeting Animator"].str.replace("@cyberuniversity.com", "@liora.io", regex=False)
 
     df['Meeting Start Date'] = pd.to_datetime(df['Meeting Start Date'], errors='coerce')
+    
+    if has_request_context():
+        lang = session.get('lang_filter', 'ALL')
+        if lang in ['FR', 'EN'] and "Language" in df.columns:
+            df = df[df["Language"] == lang]
+
     df.dropna(inplace=True)
     return df
