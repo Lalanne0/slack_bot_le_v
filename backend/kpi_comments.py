@@ -42,7 +42,7 @@ def get_masterclasses_with_negative_feedback(df, seuil=3, min_negatifs=1, longue
             avis_list = (
                 group[['Meeting ID', 'Meeting Start Date', 'Meeting Animator', 
                        'Comment', 'User Fullname', 'User ID', 'Content Grade']]
-                .sort_values(by='Meeting Start Date')
+                .sort_values(by='Meeting Start Date', ascending=False)
                 .to_dict('records')
             )
 
@@ -151,8 +151,8 @@ def get_negative_comments_for_session(
     if dfx.empty:
         return []
 
-    # Trie par date croissante
-    dfx = dfx.sort_values(by='Meeting Start Date')
+    # Trie par date décroissante (plus récent au plus ancien)
+    dfx = dfx.sort_values(by='Meeting Start Date', ascending=False)
 
     # Retourne une liste de dicts utiles
     cols = ['Meeting ID', 'Meeting Start Date', 'Meeting Animator',
@@ -206,5 +206,5 @@ def get_comments(
     if not pd.api.types.is_datetime64_any_dtype(out['Meeting Start Date']):
         out['Meeting Start Date'] = pd.to_datetime(out['Meeting Start Date'], errors='coerce')
 
-    out = out.sort_values(by='Meeting Start Date').reset_index(drop=True)
+    out = out.sort_values(by='Meeting Start Date', ascending=False).reset_index(drop=True)
     return out

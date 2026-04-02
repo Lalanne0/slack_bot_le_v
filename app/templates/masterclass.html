@@ -24,7 +24,7 @@
       <div class="card-body">
         <ul class="list-unstyled mb-0">
           <li><strong>Sessions totales :</strong> {{ sessions_total }}</li>
-          <li><strong>Moyenne générale :</strong> {{ moyenne_generale }}</li>
+          <li><strong>Moyenne (contenu) :</strong> {{ moyenne_generale }}</li>
           <li><strong>Classement :</strong> {{ classement }}</li>
         </ul>
       </div>
@@ -39,7 +39,7 @@
       <div class="card-body">
         <ul class="list-unstyled">
           <li><strong>Sessions :</strong> {{ sessions_30j }}</li>
-          <li><strong>Moyenne :</strong>
+          <li><strong>Moyenne (contenu) :</strong>
             {% if moyenne_30j is not none %} {{ moyenne_30j }} {% else %} Aucune donnée {% endif %}
           </li>
           <li><strong>Classement :</strong> {{ classement_30j }}</li>
