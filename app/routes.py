@@ -1,6 +1,7 @@
 import os
 import io
 import base64
+import threading
 from pathlib import Path
 
 import pandas as pd
@@ -15,13 +16,109 @@ from backend.kpi_comments import *
 from backend.kpi_techaway import *
 from backend.reporting import *
 from backend.utils import meeting_mapping, pole_mapping
-from datetime import datetime
+from datetime import datetime, timedelta
+from flask import jsonify
+from backend.nexus_client import load_credentials, save_credentials, refresh_data_from_nexus
+from backend.scheduler import job_generate_weekly_report
 
 ALLOWED_EXTENSIONS = {"csv"}
 bp = Blueprint("main", __name__)
 
+# File-based state so all Gunicorn worker processes see the same status
+_REFRESH_STATE_FILE = "data/refresh_state.json"
+
+def _write_refresh_state(status, message=""):
+    import json as _json
+    os.makedirs("data", exist_ok=True)
+    with open(_REFRESH_STATE_FILE, "w") as f:
+        _json.dump({"status": status, "message": message}, f)
+
+def _read_refresh_state():
+    import json as _json
+    try:
+        with open(_REFRESH_STATE_FILE, "r") as f:
+            return _json.load(f)
+    except Exception:
+        return {"status": "idle", "message": ""}
+
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def _run_refresh_in_background():
+    """Runs the full Nexus fetch + preprocess in a background thread."""
+    _write_refresh_state("running", "Téléchargement des données en cours...")
+    try:
+        success = refresh_data_from_nexus()
+        if not success:
+            _write_refresh_state("error", "Échec du téléchargement via l'API Nexus.")
+            return
+
+        _write_refresh_state("running", "Traitement des données...")
+        try:
+            df_fr_raw = pd.read_csv("data/uploads/post_meeting_masterclass.csv")
+        except Exception:
+            df_fr_raw = None
+        try:
+            df_en_raw = pd.read_csv("data/uploads/post_meeting_masterclass_en.csv")
+        except Exception:
+            df_en_raw = None
+
+        df = preprocess_data(df_fr_raw, df_en_raw)
+        if df is not None and not df.empty:
+            df.to_csv("data/processed/merged_processed.csv", index=False)
+            with open("data/last_upload.txt", "w") as f:
+                f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
+            _write_refresh_state("success", "Données mises à jour avec succès !")
+        else:
+            _write_refresh_state("error", "Aucune donnée après le traitement.")
+    except Exception as e:
+        msg = str(e)
+        if "credentials" in msg.lower() or "auth" in msg.lower() or "invalid" in msg.lower():
+            _write_refresh_state("credentials_required", msg)
+        else:
+            _write_refresh_state("error", msg)
+
+
+@bp.route("/refresh_data", methods=["GET", "POST"])
+def refresh_data():
+    try:
+        state = _read_refresh_state()
+
+        # If a refresh is already running, don't start another one
+        if state.get("status") == "running":
+            return jsonify(state)
+
+        if request.method == "POST":
+            # Use get_json(silent=True) — never raises even if Content-Type is wrong
+            data = request.get_json(silent=True) or {}
+            if "email" in data and "password" in data:
+                save_credentials(data["email"], data["password"])
+
+        # Check credentials before starting
+        creds = load_credentials()
+        if not creds:
+            return jsonify({"status": "credentials_required"})
+
+        # Write initial state and kick off background thread
+        _write_refresh_state("running", "Démarrage du téléchargement...")
+        t = threading.Thread(target=_run_refresh_in_background, daemon=True)
+        t.start()
+        return jsonify({"status": "running", "message": "Téléchargement des données en cours..."})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Erreur serveur: {str(e)}"}), 500
+
+
+@bp.route("/refresh_status", methods=["GET"])
+def refresh_status():
+    """Returns the current status of the background refresh operation."""
+    try:
+        return jsonify(_read_refresh_state())
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 def _upload_dir() -> Path:
     p = Path(current_app.config.get("UPLOAD_FOLDER", "data/uploads"))

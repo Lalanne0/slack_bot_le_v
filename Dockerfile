@@ -17,5 +17,5 @@ EXPOSE 5000
 ENV FLASK_APP=run.py
 
 # Run commands to start the application with Gunicorn
-# Adjust worker count based on your EC2 instance size if needed
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+# gthread workers allow concurrent request handling while background threads process data
+CMD ["gunicorn", "--timeout", "600", "--worker-class", "gthread", "--workers", "2", "--threads", "4", "--bind", "0.0.0.0:5000", "run:app"]

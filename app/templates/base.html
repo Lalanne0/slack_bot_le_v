@@ -35,6 +35,12 @@
                     <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.commentaires' %}active fw-bold{% endif %}" href="{{ url_for('main.commentaires') }}">Commentaires</a></li>
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item me-3 mt-1">
+                        <button class="btn btn-sm btn-primary" onclick="initRefreshData()" id="btnRefreshData">
+                            <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span id="refreshText">Actualiser les données</span>
+                        </button>
+                    </li>
                     <li class="nav-item">
                         <div class="btn-group btn-group-sm mt-1" role="group">
                             {% set current_lang = session.get('lang_filter', 'ALL') %}
@@ -52,10 +58,178 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Credentials Modal -->
+    <div class="modal fade" id="credentialsModal" tabindex="-1" aria-labelledby="credentialsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="credentialsForm">
+              <div class="modal-header">
+                <h5 class="modal-title" id="credentialsModalLabel">Identifiants Nexus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>Veuillez entrer vos identifiants pour actualiser les données depuis Nexus.</p>
+                <div class="mb-3">
+                  <label for="nexusEmail" class="form-label">Email Liora / Datascientest</label>
+                  <input type="email" class="form-control" id="nexusEmail" required>
+                </div>
+                <div class="mb-3">
+                  <label for="nexusPassword" class="form-label">Mot de passe</label>
+                  <input type="password" class="form-control" id="nexusPassword" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitCreds">Valider et Actualiser</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HoA8q8QyHxBaF8H1SknszpExDPg/lU8VX2seP8vlztpFZy2s7Cvh5vnQJ0Q8aZAJ"
         crossorigin="anonymous"></script>
+
+    <script>
+      let _pollInterval = null;
+      let _formListenerAttached = false;
+
+      // Pure CSS-based modal control — no dependency on bootstrap JS global.
+      // Bootstrap CSS handles the visual styling; we just toggle classes.
+      function showModal() {
+          const el = document.getElementById('credentialsModal');
+          el.style.display = 'block';
+          el.classList.add('show');
+          el.setAttribute('aria-modal', 'true');
+          el.removeAttribute('aria-hidden');
+          document.body.classList.add('modal-open');
+          let bd = document.getElementById('_nexusBackdrop');
+          if (!bd) {
+              bd = document.createElement('div');
+              bd.id = '_nexusBackdrop';
+              bd.className = 'modal-backdrop fade show';
+              document.body.appendChild(bd);
+          }
+          if (!_formListenerAttached) {
+              _formListenerAttached = true;
+              document.getElementById('credentialsForm').addEventListener('submit', function(e) {
+                  e.preventDefault();
+                  const email = document.getElementById('nexusEmail').value;
+                  const password = document.getElementById('nexusPassword').value;
+                  hideModal();
+                  startRefresh({ email, password });
+              });
+              // Allow closing with the X button
+              document.querySelectorAll('#credentialsModal [data-bs-dismiss="modal"]').forEach(function(btn) {
+                  btn.addEventListener('click', hideModal);
+              });
+          }
+      }
+
+      function hideModal() {
+          const el = document.getElementById('credentialsModal');
+          el.style.display = 'none';
+          el.classList.remove('show');
+          el.setAttribute('aria-hidden', 'true');
+          el.removeAttribute('aria-modal');
+          document.body.classList.remove('modal-open');
+          const bd = document.getElementById('_nexusBackdrop');
+          if (bd) bd.remove();
+      }
+
+      function setRefreshLoading(isLoading, label) {
+          const btn = document.getElementById("btnRefreshData");
+          const spinner = document.getElementById("refreshSpinner");
+          const text = document.getElementById("refreshText");
+          const btnCreds = document.getElementById("btnSubmitCreds");
+
+          if (isLoading) {
+              btn.disabled = true;
+              if (btnCreds) btnCreds.disabled = true;
+              spinner.classList.remove("d-none");
+              if (label) text.textContent = label;
+          } else {
+              btn.disabled = false;
+              if (btnCreds) btnCreds.disabled = false;
+              spinner.classList.add("d-none");
+              text.textContent = "Actualiser les données";
+          }
+      }
+
+      function pollStatus() {
+          fetch("{{ url_for('main.refresh_status') }}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "running") {
+                    setRefreshLoading(true, data.message || "En cours...");
+                } else {
+                    clearInterval(_pollInterval);
+                    _pollInterval = null;
+                    setRefreshLoading(false);
+
+                    if (data.status === "success") {
+                        alert("Données mises à jour avec succès !");
+                        location.reload();
+                    } else if (data.status === "credentials_required") {
+                        alert("Identifiants incorrects ou expirés. Veuillez réessayer.");
+                        showModal();
+                    } else if (data.status === "error") {
+                        alert("Erreur : " + data.message);
+                    }
+                }
+            })
+            .catch(() => {
+                // Network hiccup during poll – just wait and retry
+            });
+      }
+
+      function startRefresh(credentials) {
+          /* Fire-and-forget: the server immediately returns "running" and
+             processes in a background thread so Gunicorn stays free. */
+          const opts = credentials
+            ? { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(credentials) }
+            : { method: "GET" };
+
+          setRefreshLoading(true, "Démarrage...");
+
+          fetch("{{ url_for('main.refresh_data') }}", opts)
+            .then(res => {
+                // Always read response text first, then try JSON parse
+                return res.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch(e) {
+                        // Server returned non-JSON (e.g. HTML 500 page)
+                        console.error("Non-JSON response from /refresh_data:", text.substring(0, 500));
+                        return { status: "error", message: "Réponse serveur inattendue (voir console pour détails)." };
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === "credentials_required") {
+                    setRefreshLoading(false);
+                    showModal();
+                } else if (data.status === "running") {
+                    // Job started — begin polling every 3 seconds
+                    _pollInterval = setInterval(pollStatus, 3000);
+                } else if (data.status === "error") {
+                    setRefreshLoading(false);
+                    alert("Erreur : " + data.message);
+                }
+            })
+            .catch(err => {
+                setRefreshLoading(false);
+                alert("Impossible de contacter le serveur : " + err);
+            });
+      }
+
+      function initRefreshData() {
+          if (_pollInterval) return; // already running
+          startRefresh(null);
+      }
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>
