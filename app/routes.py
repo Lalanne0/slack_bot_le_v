@@ -379,7 +379,7 @@ def dashboard():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible."
+            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
 
         df = light_preprocess(pd.read_csv(processed_path))
 
@@ -725,7 +725,7 @@ def leaderboard():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible."
+            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
 
         df = light_preprocess(pd.read_csv(processed_path))
 
@@ -839,7 +839,7 @@ def techaway():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible."
+            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
 
         df = light_preprocess(pd.read_csv(processed_path))
         
@@ -984,7 +984,7 @@ def commentaires():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible."
+            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
 
         df = light_preprocess(pd.read_csv(processed_path))
 
