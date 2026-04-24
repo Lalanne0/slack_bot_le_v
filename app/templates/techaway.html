@@ -2,7 +2,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="mb-4">TechAway</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>TechAway</h2>
+    <button class="btn btn-primary btn-sm" onclick="initRefreshTechawayData()" id="btnRefreshTechawayData">
+        <span id="refreshTechawaySpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span id="refreshTechawayText">Télécharger les données TechAway</span>
+    </button>
+</div>
 
 <div class="alert alert-warning" role="alert">
   <strong>Attention :</strong> pensez à bien uploader les bons fichiers pour pouvoir afficher correctement cette page (<span class="font-monospace">Nexus > Insights > Surveys > techaway_post_tp</span>).
@@ -80,6 +86,35 @@
   <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">← Retour au dashboard</a>
 </p>
 
+<!-- Credentials Modal for TechAway -->
+<div class="modal fade" id="credentialsTechawayModal" tabindex="-1" aria-labelledby="credentialsTechawayModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="credentialsTechawayForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="credentialsTechawayModalLabel">Identifiants Nexus</h5>
+            <button type="button" class="btn-close" onclick="hideTechawayModal()" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Veuillez entrer vos identifiants pour actualiser les données TechAway depuis Nexus.</p>
+            <div class="mb-3">
+              <label for="nexusTechawayEmail" class="form-label">Email Liora / Datascientest</label>
+              <input type="email" class="form-control" id="nexusTechawayEmail" required>
+            </div>
+            <div class="mb-3">
+              <label for="nexusTechawayPassword" class="form-label">Mot de passe</label>
+              <input type="password" class="form-control" id="nexusTechawayPassword" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="hideTechawayModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitTechawayCreds">Valider et Actualiser</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -133,5 +168,126 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+  let _pollTechawayInterval = null;
+
+  function showTechawayModal() {
+      const el = document.getElementById('credentialsTechawayModal');
+      el.style.display = 'block';
+      el.classList.add('show');
+      el.setAttribute('aria-modal', 'true');
+      el.removeAttribute('aria-hidden');
+      document.body.classList.add('modal-open');
+      let bd = document.getElementById('_nexusTechawayBackdrop');
+      if (!bd) {
+          bd = document.createElement('div');
+          bd.id = '_nexusTechawayBackdrop';
+          bd.className = 'modal-backdrop fade show';
+          document.body.appendChild(bd);
+      }
+  }
+
+  function hideTechawayModal() {
+      const el = document.getElementById('credentialsTechawayModal');
+      el.style.display = 'none';
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden', 'true');
+      el.removeAttribute('aria-modal');
+      document.body.classList.remove('modal-open');
+      const bd = document.getElementById('_nexusTechawayBackdrop');
+      if (bd) bd.remove();
+  }
+
+  document.getElementById('credentialsTechawayForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('nexusTechawayEmail').value;
+      const password = document.getElementById('nexusTechawayPassword').value;
+      hideTechawayModal();
+      startRefreshTechaway({ email, password });
+  });
+
+  function setRefreshTechawayLoading(isLoading, label) {
+      const btn = document.getElementById("btnRefreshTechawayData");
+      const spinner = document.getElementById("refreshTechawaySpinner");
+      const text = document.getElementById("refreshTechawayText");
+      const btnCreds = document.getElementById("btnSubmitTechawayCreds");
+
+      if (isLoading) {
+          btn.disabled = true;
+          if (btnCreds) btnCreds.disabled = true;
+          spinner.classList.remove("d-none");
+          if (label) text.textContent = label;
+      } else {
+          btn.disabled = false;
+          if (btnCreds) btnCreds.disabled = false;
+          spinner.classList.add("d-none");
+          text.textContent = "Télécharger les données TechAway";
+      }
+  }
+
+  function pollTechawayStatus() {
+      fetch("{{ url_for('main.refresh_techaway_status') }}")
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "running") {
+                setRefreshTechawayLoading(true, data.message || "En cours...");
+            } else {
+                clearInterval(_pollTechawayInterval);
+                _pollTechawayInterval = null;
+                setRefreshTechawayLoading(false);
+
+                if (data.status === "success") {
+                    alert("Données TechAway mises à jour avec succès !");
+                    location.reload();
+                } else if (data.status === "credentials_required") {
+                    alert("Identifiants incorrects ou expirés. Veuillez réessayer.");
+                    showTechawayModal();
+                } else if (data.status === "error") {
+                    alert("Erreur : " + data.message);
+                }
+            }
+        })
+        .catch(() => {});
+  }
+
+  function startRefreshTechaway(credentials) {
+      const opts = credentials
+        ? { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(credentials) }
+        : { method: "GET" };
+
+      setRefreshTechawayLoading(true, "Démarrage...");
+
+      fetch("{{ url_for('main.refresh_techaway') }}", opts)
+        .then(res => {
+            return res.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch(e) {
+                    console.error("Non-JSON response from /refresh_techaway:", text.substring(0, 500));
+                    return { status: "error", message: "Réponse serveur inattendue (voir console)." };
+                }
+            });
+        })
+        .then(data => {
+            if (data.status === "credentials_required") {
+                setRefreshTechawayLoading(false);
+                showTechawayModal();
+            } else if (data.status === "running") {
+                _pollTechawayInterval = setInterval(pollTechawayStatus, 3000);
+            } else if (data.status === "error") {
+                setRefreshTechawayLoading(false);
+                alert("Erreur : " + data.message);
+            }
+        })
+        .catch(err => {
+            setRefreshTechawayLoading(false);
+            alert("Impossible de contacter le serveur : " + err);
+        });
+  }
+
+  window.initRefreshTechawayData = function() {
+      if (_pollTechawayInterval) return;
+      startRefreshTechaway(null);
+  };
 </script>
 {% endblock %}

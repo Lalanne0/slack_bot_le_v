@@ -18,7 +18,7 @@ from backend.reporting import *
 from backend.utils import meeting_mapping, pole_mapping
 from datetime import datetime, timedelta
 from flask import jsonify
-from backend.nexus_client import load_credentials, save_credentials, refresh_data_from_nexus
+from backend.nexus_client import load_credentials, save_credentials, refresh_data_from_nexus, refresh_techaway_from_nexus
 from backend.scheduler import job_generate_weekly_report
 
 ALLOWED_EXTENSIONS = {"csv"}
@@ -41,6 +41,22 @@ def _read_refresh_state():
     except Exception:
         return {"status": "idle", "message": ""}
 
+_REFRESH_STATE_FILE_TA = "data/refresh_state_ta.json"
+
+def _write_refresh_state_ta(status, message=""):
+    import json as _json
+    os.makedirs("data", exist_ok=True)
+    with open(_REFRESH_STATE_FILE_TA, "w") as f:
+        _json.dump({"status": status, "message": message}, f)
+
+def _read_refresh_state_ta():
+    import json as _json
+    try:
+        with open(_REFRESH_STATE_FILE_TA, "r") as f:
+            return _json.load(f)
+    except Exception:
+        return {"status": "idle", "message": ""}
+
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -54,6 +70,7 @@ def _run_refresh_in_background():
             return
 
         _write_refresh_state("running", "Traitement des données...")
+        dfs_processed = []
         try:
             df_fr_raw = pd.read_csv("data/uploads/post_meeting_masterclass.csv")
         except Exception:
@@ -63,8 +80,25 @@ def _run_refresh_in_background():
         except Exception:
             df_en_raw = None
 
-        df = preprocess_data(df_fr_raw, df_en_raw)
-        if df is not None and not df.empty:
+        df_mc = preprocess_data(df_fr_raw, df_en_raw)
+        if df_mc is not None and not df_mc.empty:
+            dfs_processed.append(df_mc)
+            
+        try:
+            df_ta_fr = pd.read_csv("data/uploads/techaway_post_tp.csv")
+        except Exception:
+            df_ta_fr = None
+        try:
+            df_ta_en = pd.read_csv("data/uploads/techaway_post_tp_en.csv")
+        except Exception:
+            df_ta_en = None
+
+        df_ta = preprocess_data(df_ta_fr, df_ta_en)
+        if df_ta is not None and not df_ta.empty:
+            dfs_processed.append(df_ta)
+
+        if dfs_processed:
+            df = pd.concat(dfs_processed, ignore_index=True)
             df.to_csv("data/processed/merged_processed.csv", index=False)
             with open("data/last_upload.txt", "w") as f:
                 f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
@@ -77,6 +111,59 @@ def _run_refresh_in_background():
             _write_refresh_state("credentials_required", msg)
         else:
             _write_refresh_state("error", msg)
+
+
+def _run_techaway_refresh_in_background():
+    """Runs the full Nexus fetch + preprocess for techaway in a background thread."""
+    _write_refresh_state_ta("running", "Téléchargement des données TechAway en cours...")
+    try:
+        success = refresh_techaway_from_nexus()
+        if not success:
+            _write_refresh_state_ta("error", "Échec du téléchargement via l'API Nexus.")
+            return
+
+        _write_refresh_state_ta("running", "Traitement des données...")
+        dfs_processed = []
+        try:
+            df_fr_raw = pd.read_csv("data/uploads/post_meeting_masterclass.csv")
+        except Exception:
+            df_fr_raw = None
+        try:
+            df_en_raw = pd.read_csv("data/uploads/post_meeting_masterclass_en.csv")
+        except Exception:
+            df_en_raw = None
+
+        df_mc = preprocess_data(df_fr_raw, df_en_raw)
+        if df_mc is not None and not df_mc.empty:
+            dfs_processed.append(df_mc)
+            
+        try:
+            df_ta_fr = pd.read_csv("data/uploads/techaway_post_tp.csv")
+        except Exception:
+            df_ta_fr = None
+        try:
+            df_ta_en = pd.read_csv("data/uploads/techaway_post_tp_en.csv")
+        except Exception:
+            df_ta_en = None
+
+        df_ta = preprocess_data(df_ta_fr, df_ta_en)
+        if df_ta is not None and not df_ta.empty:
+            dfs_processed.append(df_ta)
+
+        if dfs_processed:
+            df = pd.concat(dfs_processed, ignore_index=True)
+            df.to_csv("data/processed/merged_processed.csv", index=False)
+            with open("data/last_upload.txt", "w") as f:
+                f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
+            _write_refresh_state_ta("success", "Données mises à jour avec succès !")
+        else:
+            _write_refresh_state_ta("error", "Aucune donnée après le traitement.")
+    except Exception as e:
+        msg = str(e)
+        if "credentials" in msg.lower() or "auth" in msg.lower() or "invalid" in msg.lower():
+            _write_refresh_state_ta("credentials_required", msg)
+        else:
+            _write_refresh_state_ta("error", msg)
 
 
 @bp.route("/refresh_data", methods=["GET", "POST"])
@@ -116,6 +203,40 @@ def refresh_status():
     """Returns the current status of the background refresh operation."""
     try:
         return jsonify(_read_refresh_state())
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@bp.route("/refresh_techaway", methods=["GET", "POST"])
+def refresh_techaway():
+    try:
+        state = _read_refresh_state_ta()
+
+        if state.get("status") == "running":
+            return jsonify(state)
+
+        if request.method == "POST":
+            data = request.get_json(silent=True) or {}
+            if "email" in data and "password" in data:
+                save_credentials(data["email"], data["password"])
+
+        creds = load_credentials()
+        if not creds:
+            return jsonify({"status": "credentials_required"})
+
+        _write_refresh_state_ta("running", "Démarrage du téléchargement...")
+        t = threading.Thread(target=_run_techaway_refresh_in_background, daemon=True)
+        t.start()
+        return jsonify({"status": "running", "message": "Téléchargement des données en cours..."})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"Erreur serveur: {str(e)}"}), 500
+
+@bp.route("/refresh_techaway_status", methods=["GET"])
+def refresh_techaway_status():
+    try:
+        return jsonify(_read_refresh_state_ta())
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
