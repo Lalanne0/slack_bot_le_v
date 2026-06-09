@@ -99,6 +99,7 @@ def _run_refresh_in_background():
 
         if dfs_processed:
             df = pd.concat(dfs_processed, ignore_index=True)
+            os.makedirs("data/processed", exist_ok=True)
             df.to_csv("data/processed/merged_processed.csv", index=False)
             with open("data/last_upload.txt", "w") as f:
                 f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
@@ -152,6 +153,7 @@ def _run_techaway_refresh_in_background():
 
         if dfs_processed:
             df = pd.concat(dfs_processed, ignore_index=True)
+            os.makedirs("data/processed", exist_ok=True)
             df.to_csv("data/processed/merged_processed.csv", index=False)
             with open("data/last_upload.txt", "w") as f:
                 f.write(datetime.now().strftime("%d/%m/%Y à %H:%M"))
@@ -379,7 +381,7 @@ def dashboard():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
+            return render_template("no_data.html")
 
         df = light_preprocess(pd.read_csv(processed_path))
 
@@ -725,7 +727,7 @@ def leaderboard():
     try:
         processed_path = os.path.join("data/processed", "merged_processed.csv")
         if not os.path.exists(processed_path):
-            return "Aucun fichier traité disponible. Veuillez utiliser l'endpoint /upload."
+            return render_template("no_data.html")
 
         df = light_preprocess(pd.read_csv(processed_path))
 
