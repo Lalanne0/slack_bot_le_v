@@ -1,12 +1,12 @@
 # Dashboard MC & Animateurs - Flask App
 
-Application Flask pour suivre la qualité des **masterclasses** et des **animateurs** : tableaux de bord, leaderboards (tout temps & 30 jours), recherche par rôle, récap Slack, et affichage stylisé des avis négatifs.
+Application Flask pour suivre la qualité des **masterclasses** et des **animateurs** : tableaux de bord, leaderboards (tout temps & 30 jours), recherche par rôle, récap Slack, et affichage stylisé des avis négatifs. Elle inclut également un module de réévaluation du temps des exercices.
 
 ---
 
 ## Fonctionnalités
 
-* **Navbar Bootstrap** avec Login/Logout à droite
+* **Navbar Bootstrap** avec Login/Logout à droite et lien vers le module de réévaluation
 * **Dashboard** :
   * Wall of Fame / Wall of Not Fame
   * Commentaires négatifs formatés, avec liens Meeting & User
@@ -21,6 +21,12 @@ Application Flask pour suivre la qualité des **masterclasses** et des **animate
   * **Slider** du seuil minimal de sessions (une session = Meeting ID unique)
 * **Slack Bot** :
   * 3 boutons pour envoyer les récap (Top, Not Top, Commentaires négatifs)
+* **Time Reevaluation (Time Reeval)** :
+  * Comparaison du temps recommande et reel pour les exercices
+  * Authentification separee via les identifiants Nexus
+  * Ajout de sources de donnees par User ID ou Cohort ID
+  * Chargement rapide de cohortes echantillons predefinies
+  * Graphiques interactifs et table de details triable
 
 ---
 
@@ -105,6 +111,13 @@ slack_bot_flask/
 ├─ data/
 │  ├─ processed/
 │  └─ uploads/
+├─ reevaluation_time_exercise/      # module de reevaluation du temps des exercices
+│  ├─ app/
+│  │  ├─ static/
+│  │  ├─ templates/
+│  │  ├─ data_processor.py          # logique de traitement des modules et cohortes
+│  │  ├─ nexus_client.py            # client API Nexus
+│  │  └─ routes.py                  # endpoints reeval (login, dashboard, APIs)
 ├─ config.py                        # variables d'env (bot slack et app)
 ├─ Dockerfile
 ├─ docker-compose.yml
@@ -117,3 +130,4 @@ slack_bot_flask/
 ## Données
 
 L'application attend un fichier `post_meeting_masterclass.csv` dans `data/uploads/` pour générer les statistiques. Le fichier `merged_processed.csv` est généré automatiquement dans `data/processed/`.
+
