@@ -22,8 +22,15 @@ from flask import (
     stream_with_context,
 )
 
-from .nexus_client import authenticate, fetch_user_lessons, fetch_cohort_users
+from .nexus_client import fetch_user_lessons, fetch_cohort_users
 from .data_processor import DataPool, extract_modules_from_lessons
+from backend.nexus_client import load_credentials, get_auth
+
+def _get_global_token():
+    creds = load_credentials()
+    if creds:
+        return get_auth(creds["email"], creds["password"])
+    return None
 
 bp = Blueprint(
     "reeval",
@@ -47,68 +54,22 @@ _fetch_progress = {
 }
 
 
-def _require_auth(f):
-    """Decorator: redirect to login if no token in session, or return 401 JSON for API requests."""
-    from functools import wraps
-
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if "reeval_token" not in session:
-            if request.path.startswith("/api/") or "/api/" in request.path or request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
-                return jsonify({"success": False, "error": "Authentication required."}), 401
-            return redirect(url_for("reeval.login"))
-        return f(*args, **kwargs)
-
-    return decorated
-
-
 # ── Pages ──────────────────────────────────────────────────────────────
 
 @bp.route("/")
 def index():
-    if "reeval_token" in session:
-        return redirect(url_for("reeval.dashboard"))
-    return redirect(url_for("reeval.login"))
-
-
-@bp.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-
-        if not email or not password:
-            return render_template("reeval/login.html", error="Please enter both email and password.")
-
-        token = authenticate(email, password)
-        if token:
-            session["reeval_token"] = token
-            session["reeval_email"] = email
-            return redirect(url_for("reeval.dashboard"))
-        else:
-            return render_template("reeval/login.html", error="Authentication failed. Check your credentials.")
-
-    return render_template("reeval/login.html")
-
-
-@bp.route("/logout")
-def logout():
-    session.pop("reeval_token", None)
-    session.pop("reeval_email", None)
-    _data_pool.clear()
-    return redirect(url_for("reeval.login"))
-
+    return redirect(url_for("reeval.dashboard"))
 
 @bp.route("/dashboard")
-@_require_auth
 def dashboard():
-    return render_template("reeval/dashboard.html", email=session.get("reeval_email", ""))
+    creds = load_credentials()
+    email = creds["email"] if creds else ""
+    return render_template("reeval/dashboard.html", email=email)
 
 
 # ── API endpoints ──────────────────────────────────────────────────────
 
 @bp.route("/api/add-source", methods=["POST"])
-@_require_auth
 def add_source():
     """
     Add a user ID or cohort ID to the data pool.
@@ -132,7 +93,9 @@ def add_source():
     except (TypeError, ValueError):
         return jsonify({"success": False, "error": "ID must be a number."}), 400
 
-    token = session["reeval_token"]
+    token = _get_global_token()
+    if not token:
+        return jsonify({"success": False, "error": "No global auth token."}), 401
 
     # Reset progress
     _fetch_progress = {
@@ -294,14 +257,12 @@ def _fetch_users(user_ids: set, token: str):
 
 
 @bp.route("/api/progress")
-@_require_auth
 def fetch_progress():
     """Return current fetch progress."""
     return jsonify(_fetch_progress)
 
 
 @bp.route("/api/data")
-@_require_auth
 def get_data():
     """Return aggregated comparison data."""
     return jsonify({
@@ -312,7 +273,6 @@ def get_data():
 
 
 @bp.route("/api/clear", methods=["POST"])
-@_require_auth
 def clear_data():
     """Clear all pooled data."""
     _data_pool.clear()
@@ -320,7 +280,6 @@ def clear_data():
 
 
 @bp.route("/api/remove-module/<int:module_id>", methods=["POST"])
-@_require_auth
 def remove_module(module_id):
     """Remove a module from the dashboard."""
     _data_pool.remove_module(module_id)
@@ -328,7 +287,6 @@ def remove_module(module_id):
 
 
 @bp.route("/api/add-samples", methods=["POST"])
-@_require_auth
 def add_samples():
     """Add a predefined set of sample cohorts."""
     global _fetch_progress
@@ -336,7 +294,9 @@ def add_samples():
     if _fetch_progress["running"]:
         return jsonify({"success": False, "error": "A fetch is already in progress."}), 409
 
-    token = session["reeval_token"]
+    token = _get_global_token()
+    if not token:
+        return jsonify({"success": False, "error": "No global auth token."}), 401
 
     _fetch_progress = {
         "running": True,

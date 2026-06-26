@@ -18,11 +18,57 @@ from backend.reporting import *
 from backend.utils import meeting_mapping, pole_mapping
 from datetime import datetime, timedelta
 from flask import jsonify
-from backend.nexus_client import load_credentials, save_credentials, refresh_data_from_nexus, refresh_techaway_from_nexus
+from backend.nexus_client import load_credentials, save_credentials, get_auth, refresh_data_from_nexus, refresh_techaway_from_nexus
 from backend.scheduler import job_generate_weekly_report
 
 ALLOWED_EXTENSIONS = {"csv"}
 bp = Blueprint("main", __name__)
+
+@bp.before_app_request
+def require_global_auth():
+    # Allow static files and the login route itself
+    if request.endpoint and (
+        request.endpoint.startswith('static') or 
+        request.endpoint == 'main.login' or 
+        request.endpoint.endswith('.static')
+    ):
+        return
+        
+    creds = load_credentials()
+    if not creds:
+        if request.path.startswith("/api/") or "/api/" in request.path or request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return jsonify({"success": False, "error": "Authentication required."}), 401
+        return redirect(url_for("main.login"))
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    if load_credentials():
+        return redirect(url_for("main.dashboard"))
+        
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        
+        if not email or not password:
+            return render_template("login.html", error="Please enter both email and password.")
+            
+        token = get_auth(email, password)
+        if token:
+            save_credentials(email, password)
+            return redirect(url_for("main.dashboard"))
+        else:
+            return render_template("login.html", error="Authentication failed. Check your Nexus credentials.")
+            
+    return render_template("login.html")
+
+@bp.route("/logout")
+def logout():
+    import os
+    cred_file = "data/credentials.json"
+    if os.path.exists(cred_file):
+        os.remove(cred_file)
+    return redirect(url_for("main.login"))
+
 
 # File-based state so all Gunicorn worker processes see the same status
 _REFRESH_STATE_FILE = "data/refresh_state.json"
