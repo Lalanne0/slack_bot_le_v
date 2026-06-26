@@ -178,7 +178,7 @@ def refresh_data():
             return jsonify(state)
 
         if request.method == "POST":
-            # Use get_json(silent=True) — never raises even if Content-Type is wrong
+            # Use get_json(silent=True) - never raises even if Content-Type is wrong
             data = request.get_json(silent=True) or {}
             if "email" in data and "password" in data:
                 save_credentials(data["email"], data["password"])
@@ -425,7 +425,7 @@ def dashboard():
                     comment_text = (avis.get("Comment") or "").strip().replace("\n", " ")
                     author_name = avis.get("User Fullname", "")
                     rating = avis.get("Answer") or avis.get("Content Grade") or avis.get("Note")
-                    rating_str = f"{rating}/5" if rating is not None else "—/5"
+                    rating_str = f"{rating}/5" if rating is not None else "-/5"
 
                     comments_html += (
                         f"<div class='ps-3 border-start mb-3'>"
@@ -865,13 +865,13 @@ def techaway():
         def style_and_label(val):
             # Convertit une note (1..5) en couleur HSL + libellé "x.xx/5"
             if val is None:
-                return "background: #9ca3af;", "—"
+                return "background: #9ca3af;", "-"
             try:
                 v = float(val)
             except Exception:
-                return "background: #9ca3af;", "—"
+                return "background: #9ca3af;", "-"
             if math.isnan(v):
-                return "background: #9ca3af;", "—"
+                return "background: #9ca3af;", "-"
             v = max(1.0, min(5.0, v))
             hue = int(round((v / 5.0) * 120))  # 1->rouge, 5->vert
             return f"background: hsl({hue}, 70%, 45%);", f"{v:.2f}/5"
@@ -948,7 +948,7 @@ def techaway():
         for tp, val in [(1, T4A_TP1_satisf), (2, T4A_TP2_satisf), (3, T4A_TP3_satisf), (4, T4A_TP4_satisf)]:
             v = 0.0 if val is None or (isinstance(val, float) and math.isnan(val)) else float(val)
             pct = int(round(max(0.0, min(5.0, v)) / 5.0 * 100))
-            tp_meta[f"{hero_name}_N0_TP{tp}"] = {"pct": pct, "label": f"{v:.2f}/5" if val is not None else "—"}
+            tp_meta[f"{hero_name}_N0_TP{tp}"] = {"pct": pct, "label": f"{v:.2f}/5" if val is not None else "-"}
 
         # Autres verticales
         for v in verticals:
@@ -957,7 +957,7 @@ def techaway():
                     val = get_moyenne_masterclass(df, f"{v}-{code} - TP {tp}")
                     vv = 0.0 if val is None or (isinstance(val, float) and math.isnan(val)) else float(val)
                     pct = int(round(max(0.0, min(5.0, vv)) / 5.0 * 100))
-                    tp_meta[f"{v}_{code}_TP{tp}"] = {"pct": pct, "label": f"{vv:.2f}/5" if val is not None else "—"}
+                    tp_meta[f"{v}_{code}_TP{tp}"] = {"pct": pct, "label": f"{vv:.2f}/5" if val is not None else "-"}
 
         return render_template(
             "techaway.html",

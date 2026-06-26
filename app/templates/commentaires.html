@@ -11,7 +11,8 @@
     <div class="d-flex flex-wrap gap-3 mt-2">
       {% for g in [1,2,3,4,5] %}
       <div class="form-check form-check-inline m-0">
-        <input class="form-check-input" type="checkbox" name="grades" id="grade_{{ g }}" value="{{ g }}" {% if g in selected_grades %}checked{% endif %}>
+        <input class="form-check-input" type="checkbox" name="grades" id="grade_{{ g }}" value="{{ g }}" {% if g in
+          selected_grades %}checked{% endif %}>
         <label class="form-check-label" for="grade_{{ g }}">{{ g }} ★</label>
       </div>
       {% endfor %}
@@ -23,8 +24,8 @@
   <div class="col-md-4">
     <label for="min_words" class="form-label">Nombre minimum de mots</label>
     <div class="d-flex align-items-center gap-2">
-      <input type="range" id="min_words" name="min_words" class="form-range"
-             min="1" max="100" step="1" value="{{ min_words }}">
+      <input type="range" id="min_words" name="min_words" class="form-range" min="1" max="100" step="1"
+        value="{{ min_words }}">
       <span id="minWordsBadge" class="badge text-bg-secondary">{{ min_words }}</span>
     </div>
   </div>
@@ -33,8 +34,7 @@
   <div class="col-md-4">
     <label for="days" class="form-label">Période étudiée (jours)</label>
     <div class="d-flex align-items-center gap-2">
-      <input type="range" id="days" name="days" class="form-range"
-             min="1" max="180" step="1" value="{{ days }}">
+      <input type="range" id="days" name="days" class="form-range" min="1" max="180" step="1" value="{{ days }}">
       <span id="daysBadge" class="badge text-bg-secondary">{{ days }}</span>
     </div>
   </div>
@@ -47,48 +47,48 @@
 
 {% set rows = comments_df.to_dict(orient='records') if comments_df is not none else [] %}
 {% if rows and rows|length > 0 %}
-  <div class="card">
-    <ul class="list-group list-group-flush">
-      {% for r in rows %}
-        {% set meeting_link = 'https://nexus.datascientest.com/meeting/' ~ (r['Meeting ID'] or '') %}
-        {% set user_link = 'https://nexus.datascientest.com/user/' ~ (r['User ID'] or '') %}
-        <li class="list-group-item">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <strong>{{ r['Masterclass'] }}</strong><br>
-              <small class="text-muted">
-                {% if r['Meeting Start Date'] %}
-                  <a href="{{ meeting_link }}" target="_blank" rel="noopener">
-                    {{ r['Meeting Start Date'].date() }}
-                  </a>
-                {% else %}
-                  —
-                {% endif %}
-                ·
-                {% if r['User Fullname'] %}
-                  <a href="{{ user_link }}" target="_blank" rel="noopener">
-                    {{ r['User Fullname'] }}
-                  </a>
-                {% else %}
-                  Utilisateur inconnu
-                {% endif %}
-                · 👨‍🏫 {{ r['Meeting Animator'] or '—' }}
-              </small>
-            </div>
-            <div class="ms-3">
-              ⭐ {{ r['Content Grade'] if r['Content Grade'] is not none else '—' }}/5
-            </div>
-          </div>
+<div class="card">
+  <ul class="list-group list-group-flush">
+    {% for r in rows %}
+    {% set meeting_link = 'https://nexus.datascientest.com/meeting/' ~ (r['Meeting ID'] or '') %}
+    {% set user_link = 'https://nexus.datascientest.com/user/' ~ (r['User ID'] or '') %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <strong>{{ r['Masterclass'] }}</strong><br>
+          <small class="text-muted">
+            {% if r['Meeting Start Date'] %}
+            <a href="{{ meeting_link }}" target="_blank" rel="noopener">
+              {{ r['Meeting Start Date'].date() }}
+            </a>
+            {% else %}
+            -
+            {% endif %}
+            ·
+            {% if r['User Fullname'] %}
+            <a href="{{ user_link }}" target="_blank" rel="noopener">
+              {{ r['User Fullname'] }}
+            </a>
+            {% else %}
+            Utilisateur inconnu
+            {% endif %}
+            · 👨‍🏫 {{ r['Meeting Animator'] or '-' }}
+          </small>
+        </div>
+        <div class="ms-3">
+          ⭐ {{ r['Content Grade'] if r['Content Grade'] is not none else '-' }}/5
+        </div>
+      </div>
 
-          {% if r['Comment'] %}
-            <div class="mt-2"><em>{{ r['Comment'] }}</em></div>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
+      {% if r['Comment'] %}
+      <div class="mt-2"><em>{{ r['Comment'] }}</em></div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% else %}
-  <div class="alert alert-info">Aucun commentaire pour les filtres sélectionnés.</div>
+<div class="alert alert-info">Aucun commentaire pour les filtres sélectionnés.</div>
 {% endif %}
 
 <p class="mt-4">
@@ -99,14 +99,14 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const minWords = document.getElementById('min_words');
-  const minWordsBadge = document.getElementById('minWordsBadge');
-  if (minWords) minWords.addEventListener('input', () => minWordsBadge.textContent = minWords.value);
+  document.addEventListener('DOMContentLoaded', function () {
+    const minWords = document.getElementById('min_words');
+    const minWordsBadge = document.getElementById('minWordsBadge');
+    if (minWords) minWords.addEventListener('input', () => minWordsBadge.textContent = minWords.value);
 
-  const days = document.getElementById('days');
-  const daysBadge = document.getElementById('daysBadge');
-  if (days) days.addEventListener('input', () => daysBadge.textContent = days.value);
-});
+    const days = document.getElementById('days');
+    const daysBadge = document.getElementById('daysBadge');
+    if (days) days.addEventListener('input', () => daysBadge.textContent = days.value);
+  });
 </script>
 {% endblock %}

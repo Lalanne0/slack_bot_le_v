@@ -1,22 +1,24 @@
-<!-- app/templates/techaway.html — un seul bloc niveau TECHFORALL (N0) + TP -->
+<!-- app/templates/techaway.html - un seul bloc niveau TECHFORALL (N0) + TP -->
 {% extends "base.html" %}
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>TechAway</h2>
-    <button class="btn btn-primary btn-sm" onclick="initRefreshTechawayData()" id="btnRefreshTechawayData">
-        <span id="refreshTechawaySpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-        <span id="refreshTechawayText">Télécharger les données TechAway</span>
-    </button>
+  <h2>TechAway</h2>
+  <button class="btn btn-primary btn-sm" onclick="initRefreshTechawayData()" id="btnRefreshTechawayData">
+    <span id="refreshTechawaySpinner" class="spinner-border spinner-border-sm d-none" role="status"
+      aria-hidden="true"></span>
+    <span id="refreshTechawayText">Télécharger les données TechAway</span>
+  </button>
 </div>
 
 <div class="alert alert-warning" role="alert">
-  <strong>Attention :</strong> pensez à bien uploader les bons fichiers pour pouvoir afficher correctement cette page (<span class="font-monospace">Nexus > Insights > Surveys > techaway_post_tp</span>).
+  <strong>Attention :</strong> pensez à bien uploader les bons fichiers pour pouvoir afficher correctement cette page
+  (<span class="font-monospace">Nexus > Insights > Surveys > techaway_post_tp</span>).
 </div>
 
 <!-- Tuile programme TECHFORALL -->
 <div class="hero-techaway d-flex flex-column align-items-center justify-content-center mb-2 js-program"
-     data-program="{{ hero_name }}" style="{{ hero_style }}" role="button" tabindex="0">
+  data-program="{{ hero_name }}" style="{{ hero_style }}" role="button" tabindex="0">
   <div class="display-6 fw-bold text-white text-shadow">{{ hero_name }}</div>
   <div class="text-white-50 text-shadow">{{ hero_score_label }}</div>
 </div>
@@ -24,8 +26,8 @@
 <!-- Un seul bloc de niveau (N0) pour TECHFORALL -->
 <div id="levels-{{ hero_name }}" class="level-grid d-none mb-2">
   {% set lvl = hero_levels[0] %}
-  <div class="level-tile js-level" style="{{ lvl.style }}"
-       data-program="{{ hero_name }}" data-level="{{ lvl.code }}" role="button" tabindex="0">
+  <div class="level-tile js-level" style="{{ lvl.style }}" data-program="{{ hero_name }}" data-level="{{ lvl.code }}"
+    role="button" tabindex="0">
     <div class="fw-semibold">{{ lvl.name }}</div>
     <div class="small">{{ lvl.score_label }}</div>
   </div>
@@ -34,51 +36,51 @@
 <!-- TPs du hero (N0) -->
 <div id="tp-{{ hero_name }}-N0" class="tp-grid d-none mb-4" data-group="tp-panels">
   {% for tp in [1,2,3,4] %}
-    {% set key = hero_name ~ '_N0_TP' ~ tp %}
-    {% set meta = tp_meta.get(key) %}
-    {% set ms = hero_name ~ '-N0 - TP ' ~ tp %}
-    <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
-      <div>TP {{ tp }}</div>
-      <div class="tp-score">{{ meta.label if meta else '—' }}</div>
-      <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
-    </a>
+  {% set key = hero_name ~ '_N0_TP' ~ tp %}
+  {% set meta = tp_meta.get(key) %}
+  {% set ms = hero_name ~ '-N0 - TP ' ~ tp %}
+  <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
+    <div>TP {{ tp }}</div>
+    <div class="tp-score">{{ meta.label if meta else '-' }}</div>
+    <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
+  </a>
   {% endfor %}
 </div>
 
 <!-- Autres verticales regroupées (programme -> niveaux -> TPs) -->
 <div class="vertical-grid">
   {% for t in tiles %}
-    <div class="vertical-card">
-      <div class="vertical-tile js-program" data-program="{{ t.name }}" style="{{ t.style }}" role="button" tabindex="0">
-        <div class="vertical-name">{{ t.name }}</div>
-        <div class="vertical-score">{{ t.score_label }}</div>
-      </div>
+  <div class="vertical-card">
+    <div class="vertical-tile js-program" data-program="{{ t.name }}" style="{{ t.style }}" role="button" tabindex="0">
+      <div class="vertical-name">{{ t.name }}</div>
+      <div class="vertical-score">{{ t.score_label }}</div>
+    </div>
 
-      <div id="levels-{{ t.name }}" class="level-grid d-none mb-2">
-        {% for lvl in t.levels %}
-          <div class="level-tile js-level" style="{{ lvl.style }}"
-               data-program="{{ t.name }}" data-level="{{ lvl.code }}" role="button" tabindex="0">
-            <div class="fw-semibold">{{ lvl.name }}</div>
-            <div class="small">{{ lvl.score_label }}</div>
-          </div>
-        {% endfor %}
-      </div>
-
+    <div id="levels-{{ t.name }}" class="level-grid d-none mb-2">
       {% for lvl in t.levels %}
-        <div id="tp-{{ t.name }}-{{ lvl.code }}" class="tp-grid d-none mb-4" data-group="tp-panels">
-          {% for tp in [1,2,3,4] %}
-            {% set key = t.name ~ '_' ~ lvl.code ~ '_TP' ~ tp %}
-            {% set meta = tp_meta.get(key) %}
-            {% set ms = t.name ~ '-' ~ lvl.code ~ ' - TP ' ~ tp %}
-            <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
-              <div>TP {{ tp }}</div>
-              <div class="tp-score">{{ meta.label if meta else '—' }}</div>
-              <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
-            </a>
-          {% endfor %}
-        </div>
+      <div class="level-tile js-level" style="{{ lvl.style }}" data-program="{{ t.name }}" data-level="{{ lvl.code }}"
+        role="button" tabindex="0">
+        <div class="fw-semibold">{{ lvl.name }}</div>
+        <div class="small">{{ lvl.score_label }}</div>
+      </div>
       {% endfor %}
     </div>
+
+    {% for lvl in t.levels %}
+    <div id="tp-{{ t.name }}-{{ lvl.code }}" class="tp-grid d-none mb-4" data-group="tp-panels">
+      {% for tp in [1,2,3,4] %}
+      {% set key = t.name ~ '_' ~ lvl.code ~ '_TP' ~ tp %}
+      {% set meta = tp_meta.get(key) %}
+      {% set ms = t.name ~ '-' ~ lvl.code ~ ' - TP ' ~ tp %}
+      <a class="tp-tile" href="{{ url_for('main.masterclass_detail', masterclass=ms) }}">
+        <div>TP {{ tp }}</div>
+        <div class="tp-score">{{ meta.label if meta else '-' }}</div>
+        <div class="tp-bar" style="width: {{ meta.pct if meta else 0 }}%;"></div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
   {% endfor %}
 </div>
 
@@ -87,29 +89,30 @@
 </p>
 
 <!-- Credentials Modal for TechAway -->
-<div class="modal fade" id="credentialsTechawayModal" tabindex="-1" aria-labelledby="credentialsTechawayModalLabel" aria-hidden="true">
+<div class="modal fade" id="credentialsTechawayModal" tabindex="-1" aria-labelledby="credentialsTechawayModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="credentialsTechawayForm">
-          <div class="modal-header">
-            <h5 class="modal-title" id="credentialsTechawayModalLabel">Identifiants Nexus</h5>
-            <button type="button" class="btn-close" onclick="hideTechawayModal()" aria-label="Close"></button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="credentialsTechawayModalLabel">Identifiants Nexus</h5>
+          <button type="button" class="btn-close" onclick="hideTechawayModal()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Veuillez entrer vos identifiants pour actualiser les données TechAway depuis Nexus.</p>
+          <div class="mb-3">
+            <label for="nexusTechawayEmail" class="form-label">Email Liora / Datascientest</label>
+            <input type="email" class="form-control" id="nexusTechawayEmail" required>
           </div>
-          <div class="modal-body">
-            <p>Veuillez entrer vos identifiants pour actualiser les données TechAway depuis Nexus.</p>
-            <div class="mb-3">
-              <label for="nexusTechawayEmail" class="form-label">Email Liora / Datascientest</label>
-              <input type="email" class="form-control" id="nexusTechawayEmail" required>
-            </div>
-            <div class="mb-3">
-              <label for="nexusTechawayPassword" class="form-label">Mot de passe</label>
-              <input type="password" class="form-control" id="nexusTechawayPassword" required>
-            </div>
+          <div class="mb-3">
+            <label for="nexusTechawayPassword" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="nexusTechawayPassword" required>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="hideTechawayModal()">Annuler</button>
-            <button type="submit" class="btn btn-primary" id="btnSubmitTechawayCreds">Valider et Actualiser</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="hideTechawayModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitTechawayCreds">Valider et Actualiser</button>
+        </div>
       </form>
     </div>
   </div>
@@ -119,175 +122,175 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Toggle niveaux par programme (y compris TECHFORALL)
-  document.querySelectorAll('.js-program').forEach(function(el) {
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function() {
-      const name = el.dataset.program;
-      const panel = document.getElementById('levels-' + name);
-      if (panel) {
-        panel.classList.toggle('d-none');
-        if (!panel.classList.contains('d-none')) {
-          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.addEventListener('DOMContentLoaded', function () {
+    // Toggle niveaux par programme (y compris TECHFORALL)
+    document.querySelectorAll('.js-program').forEach(function (el) {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function () {
+        const name = el.dataset.program;
+        const panel = document.getElementById('levels-' + name);
+        if (panel) {
+          panel.classList.toggle('d-none');
+          if (!panel.classList.contains('d-none')) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         }
-      }
+      });
+      el.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+      });
     });
-    el.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+
+    // Un seul panneau TP ouvert à la fois
+    let currentOpenTP = null;
+
+    // Toggle TP par niveau (N0 pour TECHFORALL, N1..N3 pour les autres)
+    document.querySelectorAll('.js-level').forEach(function (levelEl) {
+      levelEl.style.cursor = 'pointer';
+      const toggleTP = () => {
+        const prog = levelEl.dataset.program;
+        const level = levelEl.dataset.level; // "N0" (Techforall) ou "N1/N2/N3"
+        const targetId = 'tp-' + prog + '-' + level;
+        const targetPanel = document.getElementById(targetId);
+        if (!targetPanel) return;
+
+        if (currentOpenTP && currentOpenTP !== targetPanel) {
+          currentOpenTP.classList.add('d-none');
+        }
+        const willOpen = targetPanel.classList.contains('d-none');
+        targetPanel.classList.toggle('d-none');
+        currentOpenTP = willOpen ? targetPanel : null;
+
+        if (willOpen) {
+          targetPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      };
+      levelEl.addEventListener('click', toggleTP);
+      levelEl.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTP(); }
+      });
     });
   });
-
-  // Un seul panneau TP ouvert à la fois
-  let currentOpenTP = null;
-
-  // Toggle TP par niveau (N0 pour TECHFORALL, N1..N3 pour les autres)
-  document.querySelectorAll('.js-level').forEach(function(levelEl) {
-    levelEl.style.cursor = 'pointer';
-    const toggleTP = () => {
-      const prog = levelEl.dataset.program;
-      const level = levelEl.dataset.level; // "N0" (Techforall) ou "N1/N2/N3"
-      const targetId = 'tp-' + prog + '-' + level;
-      const targetPanel = document.getElementById(targetId);
-      if (!targetPanel) return;
-
-      if (currentOpenTP && currentOpenTP !== targetPanel) {
-        currentOpenTP.classList.add('d-none');
-      }
-      const willOpen = targetPanel.classList.contains('d-none');
-      targetPanel.classList.toggle('d-none');
-      currentOpenTP = willOpen ? targetPanel : null;
-
-      if (willOpen) {
-        targetPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    };
-    levelEl.addEventListener('click', toggleTP);
-    levelEl.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTP(); }
-    });
-  });
-});
 
   let _pollTechawayInterval = null;
 
   function showTechawayModal() {
-      const el = document.getElementById('credentialsTechawayModal');
-      el.style.display = 'block';
-      el.classList.add('show');
-      el.setAttribute('aria-modal', 'true');
-      el.removeAttribute('aria-hidden');
-      document.body.classList.add('modal-open');
-      let bd = document.getElementById('_nexusTechawayBackdrop');
-      if (!bd) {
-          bd = document.createElement('div');
-          bd.id = '_nexusTechawayBackdrop';
-          bd.className = 'modal-backdrop fade show';
-          document.body.appendChild(bd);
-      }
+    const el = document.getElementById('credentialsTechawayModal');
+    el.style.display = 'block';
+    el.classList.add('show');
+    el.setAttribute('aria-modal', 'true');
+    el.removeAttribute('aria-hidden');
+    document.body.classList.add('modal-open');
+    let bd = document.getElementById('_nexusTechawayBackdrop');
+    if (!bd) {
+      bd = document.createElement('div');
+      bd.id = '_nexusTechawayBackdrop';
+      bd.className = 'modal-backdrop fade show';
+      document.body.appendChild(bd);
+    }
   }
 
   function hideTechawayModal() {
-      const el = document.getElementById('credentialsTechawayModal');
-      el.style.display = 'none';
-      el.classList.remove('show');
-      el.setAttribute('aria-hidden', 'true');
-      el.removeAttribute('aria-modal');
-      document.body.classList.remove('modal-open');
-      const bd = document.getElementById('_nexusTechawayBackdrop');
-      if (bd) bd.remove();
+    const el = document.getElementById('credentialsTechawayModal');
+    el.style.display = 'none';
+    el.classList.remove('show');
+    el.setAttribute('aria-hidden', 'true');
+    el.removeAttribute('aria-modal');
+    document.body.classList.remove('modal-open');
+    const bd = document.getElementById('_nexusTechawayBackdrop');
+    if (bd) bd.remove();
   }
 
-  document.getElementById('credentialsTechawayForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('nexusTechawayEmail').value;
-      const password = document.getElementById('nexusTechawayPassword').value;
-      hideTechawayModal();
-      startRefreshTechaway({ email, password });
+  document.getElementById('credentialsTechawayForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const email = document.getElementById('nexusTechawayEmail').value;
+    const password = document.getElementById('nexusTechawayPassword').value;
+    hideTechawayModal();
+    startRefreshTechaway({ email, password });
   });
 
   function setRefreshTechawayLoading(isLoading, label) {
-      const btn = document.getElementById("btnRefreshTechawayData");
-      const spinner = document.getElementById("refreshTechawaySpinner");
-      const text = document.getElementById("refreshTechawayText");
-      const btnCreds = document.getElementById("btnSubmitTechawayCreds");
+    const btn = document.getElementById("btnRefreshTechawayData");
+    const spinner = document.getElementById("refreshTechawaySpinner");
+    const text = document.getElementById("refreshTechawayText");
+    const btnCreds = document.getElementById("btnSubmitTechawayCreds");
 
-      if (isLoading) {
-          btn.disabled = true;
-          if (btnCreds) btnCreds.disabled = true;
-          spinner.classList.remove("d-none");
-          if (label) text.textContent = label;
-      } else {
-          btn.disabled = false;
-          if (btnCreds) btnCreds.disabled = false;
-          spinner.classList.add("d-none");
-          text.textContent = "Télécharger les données TechAway";
-      }
+    if (isLoading) {
+      btn.disabled = true;
+      if (btnCreds) btnCreds.disabled = true;
+      spinner.classList.remove("d-none");
+      if (label) text.textContent = label;
+    } else {
+      btn.disabled = false;
+      if (btnCreds) btnCreds.disabled = false;
+      spinner.classList.add("d-none");
+      text.textContent = "Télécharger les données TechAway";
+    }
   }
 
   function pollTechawayStatus() {
-      fetch("{{ url_for('main.refresh_techaway_status') }}")
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "running") {
-                setRefreshTechawayLoading(true, data.message || "En cours...");
-            } else {
-                clearInterval(_pollTechawayInterval);
-                _pollTechawayInterval = null;
-                setRefreshTechawayLoading(false);
+    fetch("{{ url_for('main.refresh_techaway_status') }}")
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "running") {
+          setRefreshTechawayLoading(true, data.message || "En cours...");
+        } else {
+          clearInterval(_pollTechawayInterval);
+          _pollTechawayInterval = null;
+          setRefreshTechawayLoading(false);
 
-                if (data.status === "success") {
-                    alert("Données TechAway mises à jour avec succès !");
-                    location.reload();
-                } else if (data.status === "credentials_required") {
-                    alert("Identifiants incorrects ou expirés. Veuillez réessayer.");
-                    showTechawayModal();
-                } else if (data.status === "error") {
-                    alert("Erreur : " + data.message);
-                }
-            }
-        })
-        .catch(() => {});
+          if (data.status === "success") {
+            alert("Données TechAway mises à jour avec succès !");
+            location.reload();
+          } else if (data.status === "credentials_required") {
+            alert("Identifiants incorrects ou expirés. Veuillez réessayer.");
+            showTechawayModal();
+          } else if (data.status === "error") {
+            alert("Erreur : " + data.message);
+          }
+        }
+      })
+      .catch(() => { });
   }
 
   function startRefreshTechaway(credentials) {
-      const opts = credentials
-        ? { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(credentials) }
-        : { method: "GET" };
+    const opts = credentials
+      ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(credentials) }
+      : { method: "GET" };
 
-      setRefreshTechawayLoading(true, "Démarrage...");
+    setRefreshTechawayLoading(true, "Démarrage...");
 
-      fetch("{{ url_for('main.refresh_techaway') }}", opts)
-        .then(res => {
-            return res.text().then(text => {
-                try {
-                    return JSON.parse(text);
-                } catch(e) {
-                    console.error("Non-JSON response from /refresh_techaway:", text.substring(0, 500));
-                    return { status: "error", message: "Réponse serveur inattendue (voir console)." };
-                }
-            });
-        })
-        .then(data => {
-            if (data.status === "credentials_required") {
-                setRefreshTechawayLoading(false);
-                showTechawayModal();
-            } else if (data.status === "running") {
-                _pollTechawayInterval = setInterval(pollTechawayStatus, 3000);
-            } else if (data.status === "error") {
-                setRefreshTechawayLoading(false);
-                alert("Erreur : " + data.message);
-            }
-        })
-        .catch(err => {
-            setRefreshTechawayLoading(false);
-            alert("Impossible de contacter le serveur : " + err);
+    fetch("{{ url_for('main.refresh_techaway') }}", opts)
+      .then(res => {
+        return res.text().then(text => {
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Non-JSON response from /refresh_techaway:", text.substring(0, 500));
+            return { status: "error", message: "Réponse serveur inattendue (voir console)." };
+          }
         });
+      })
+      .then(data => {
+        if (data.status === "credentials_required") {
+          setRefreshTechawayLoading(false);
+          showTechawayModal();
+        } else if (data.status === "running") {
+          _pollTechawayInterval = setInterval(pollTechawayStatus, 3000);
+        } else if (data.status === "error") {
+          setRefreshTechawayLoading(false);
+          alert("Erreur : " + data.message);
+        }
+      })
+      .catch(err => {
+        setRefreshTechawayLoading(false);
+        alert("Impossible de contacter le serveur : " + err);
+      });
   }
 
-  window.initRefreshTechawayData = function() {
-      if (_pollTechawayInterval) return;
-      startRefreshTechaway(null);
+  window.initRefreshTechawayData = function () {
+    if (_pollTechawayInterval) return;
+    startRefreshTechaway(null);
   };
 </script>
 {% endblock %}

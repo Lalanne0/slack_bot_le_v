@@ -1,10 +1,10 @@
-# 🎛️ Dashboard MC & Animateurs — Flask App
+# Dashboard MC & Animateurs - Flask App
 
 Application Flask pour suivre la qualité des **masterclasses** et des **animateurs** : tableaux de bord, leaderboards (tout temps & 30 jours), recherche par rôle, récap Slack, et affichage stylisé des avis négatifs.
 
 ---
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 * **Navbar Bootstrap** avec Login/Logout à droite
 * **Dashboard** :
@@ -24,7 +24,7 @@ Application Flask pour suivre la qualité des **masterclasses** et des **animate
 
 ---
 
-## 🚀 Démarrage Rapide
+## Démarrage Rapide
 
 ### Option A: Avec Docker (Recommandé)
 
@@ -71,7 +71,7 @@ L'application sera accessible sur http://127.0.0.1:5000
 
 ---
 
-## ☁️ Déploiement sur EC2
+## Déploiement sur EC2
 
 Documentation complète disponible dans [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -82,7 +82,7 @@ En résumé :
 
 ---
 
-## 🏗️ Structure du projet
+## Structure du projet
 
 ```
 slack_bot_flask/
@@ -114,6 +114,6 @@ slack_bot_flask/
 
 ---
 
-## 🗃️ Données
+## Données
 
 L'application attend un fichier `post_meeting_masterclass.csv` dans `data/uploads/` pour générer les statistiques. Le fichier `merged_processed.csv` est généré automatiquement dans `data/processed/`.

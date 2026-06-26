@@ -13,6 +13,10 @@ def create_app():
         from .routes import register_routes
         register_routes(app)
 
+        # Register the reevaluation module as a Blueprint
+        from reevaluation_time_exercise.app import bp as reeval_bp
+        app.register_blueprint(reeval_bp, url_prefix="/reeval")
+
     # Prevent APScheduler from running twice with Flask auto reloader or Gunicorn workers
     if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         import socket
